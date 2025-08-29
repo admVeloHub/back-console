@@ -1,19 +1,16 @@
 {
   "version": 2,
-  "name": "console-conteudo-backend",
+  "name": "console-conteudo-unificado",
   "builds": [
     {
-      "src": "server.js",
-      "use": "@vercel/node"
+      "src": "*.html",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/server.js"
+      "dest": "/index.html"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
