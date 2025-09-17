@@ -1,18 +1,13 @@
-// VERSION: v3.1.1 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.1.2 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const { getDatabase } = require('../config/database');
 
 class Velonews {
   constructor() {
     this.collectionName = 'Velonews';
-    this.isVercel = process.env.VERCEL === '1';
-    this.mockData = []; // Dados mock para Vercel
   }
 
   // Obter coleção
   getCollection() {
-    if (this.isVercel) {
-      return null; // Não usar MongoDB no Vercel
-    }
     const db = getDatabase();
     return db.collection(this.collectionName);
   }
@@ -20,22 +15,6 @@ class Velonews {
   // Criar nova velonews
   async create(velonewsData) {
     try {
-      if (this.isVercel) {
-        // Modo Vercel - usar dados mock
-        const velonews = {
-          ...velonewsData,
-          _id: Date.now().toString(),
-          createdAt: new Date(),
-          updatedAt: new Date()
-        };
-        this.mockData.push(velonews);
-        return {
-          success: true,
-          data: velonews,
-          message: 'Velonews publicada com sucesso (modo Vercel)'
-        };
-      }
-
       const collection = this.getCollection();
       const velonews = {
         ...velonewsData,

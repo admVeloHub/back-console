@@ -1,4 +1,4 @@
-// VERSION: v3.1.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.1.1 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const Velonews = require('../models/Velonews');
@@ -37,12 +37,22 @@ router.post('/', async (req, res) => {
     
     const { title, content, isCritical } = req.body;
     
-    if (!title || !content) {
-      global.emitTraffic('Velonews', 'error', 'Dados obrigatórios ausentes');
-      global.emitLog('error', 'POST /api/velonews - Título e conteúdo são obrigatórios');
+    // Validação mais flexível
+    if (!title || title.trim().length === 0) {
+      global.emitTraffic('Velonews', 'error', 'Título é obrigatório');
+      global.emitLog('error', 'POST /api/velonews - Título é obrigatório');
       return res.status(400).json({ 
         success: false, 
-        error: 'Título e conteúdo são obrigatórios' 
+        error: 'Título é obrigatório' 
+      });
+    }
+    
+    if (!content || content.trim().length === 0) {
+      global.emitTraffic('Velonews', 'error', 'Conteúdo é obrigatório');
+      global.emitLog('error', 'POST /api/velonews - Conteúdo é obrigatório');
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Conteúdo é obrigatório' 
       });
     }
 

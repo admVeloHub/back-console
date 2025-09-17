@@ -1,4 +1,4 @@
-// VERSION: v3.1.3 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.1.5 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -32,7 +32,17 @@ const io = new Server(server, {
 const PORT = process.env.PORT || 3001;
 
 // Middleware de segurança
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      connectSrc: ["'self'", "ws:", "wss:"]
+    }
+  }
+}));
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? [`https://${process.env.FRONTEND_URL || 'front-console.vercel.app'}`] 
@@ -45,7 +55,7 @@ app.use(cors({
 // Rate limiting
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutos
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100 // máximo 100 requests por IP
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 1000 // máximo 1000 requests por IP
 });
 app.use('/api/', limiter);
 
@@ -55,6 +65,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // Servir arquivos estáticos (página de monitoramento)
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Rota para favicon
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end();
+});
 
 // Middleware de monitoramento
 app.use(checkMonitoringFunctions);
@@ -74,7 +89,7 @@ app.get('/api/health', async (req, res) => {
     res.json({ 
       status: 'OK', 
       timestamp: new Date().toISOString(),
-      version: '3.1.3',
+      version: '3.1.5',
       environment: process.env.NODE_ENV || 'development',
       database: dbHealth,
       collections: collectionsStats
@@ -83,7 +98,7 @@ app.get('/api/health', async (req, res) => {
     res.status(500).json({ 
       status: 'ERROR', 
       timestamp: new Date().toISOString(),
-      version: '3.1.3',
+      version: '3.1.5',
       error: error.message
     });
   }
@@ -92,7 +107,7 @@ app.get('/api/health', async (req, res) => {
 // Rota raiz para verificar se a API está funcionando
 app.get('/', (req, res) => {
   res.json({ 
-    message: 'Console de Conteúdo VeloHub API v3.1.3',
+    message: 'Console de Conteúdo VeloHub API v3.1.5',
     status: 'OK',
     timestamp: new Date().toISOString(),
     monitor: '/monitor.html'
@@ -164,7 +179,7 @@ const startServer = async () => {
     // Iniciar servidor
     server.listen(PORT, () => {
       console.log(`🚀 Servidor rodando na porta ${PORT}`);
-      console.log(`📊 Console de Conteúdo VeloHub v3.1.3`);
+      console.log(`📊 Console de Conteúdo VeloHub v3.1.5`);
       console.log(`🌐 Ambiente: ${process.env.NODE_ENV || 'development'}`);
       console.log(`📡 Monitor Skynet: http://localhost:${PORT}/monitor`);
     });

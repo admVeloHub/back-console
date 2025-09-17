@@ -1,4 +1,4 @@
-// VERSION: v3.1.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.1.1 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 
 // Middleware para verificar se as funções de monitoramento estão disponíveis
 const checkMonitoringFunctions = (req, res, next) => {
@@ -15,6 +15,7 @@ const checkMonitoringFunctions = (req, res, next) => {
     global.emitJson = () => {};
   }
   
+  // Continuar imediatamente sem delays
   next();
 };
 
