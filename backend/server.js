@@ -1,4 +1,4 @@
-// VERSION: v3.1.2 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.1.3 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -24,9 +24,9 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: process.env.NODE_ENV === 'production' 
-      ? [process.env.FRONTEND_URL || 'https://front-console.vercel.app'] 
+      ? [`https://${process.env.FRONTEND_URL || 'front-console.vercel.app'}`] 
       : ['http://localhost:3000', 'http://localhost:3001'],
-    methods: ["GET", "POST"]
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
   }
 });
 const PORT = process.env.PORT || 3001;
@@ -35,9 +35,11 @@ const PORT = process.env.PORT || 3001;
 app.use(helmet());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.FRONTEND_URL || 'https://front-console.vercel.app'] 
+    ? [`https://${process.env.FRONTEND_URL || 'front-console.vercel.app'}`] 
     : ['http://localhost:3000'],
-  credentials: true
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 // Rate limiting
@@ -72,7 +74,7 @@ app.get('/api/health', async (req, res) => {
     res.json({ 
       status: 'OK', 
       timestamp: new Date().toISOString(),
-      version: '3.1.2',
+      version: '3.1.3',
       environment: process.env.NODE_ENV || 'development',
       database: dbHealth,
       collections: collectionsStats
@@ -81,7 +83,7 @@ app.get('/api/health', async (req, res) => {
     res.status(500).json({ 
       status: 'ERROR', 
       timestamp: new Date().toISOString(),
-      version: '3.1.2',
+      version: '3.1.3',
       error: error.message
     });
   }
@@ -90,7 +92,7 @@ app.get('/api/health', async (req, res) => {
 // Rota raiz para verificar se a API está funcionando
 app.get('/', (req, res) => {
   res.json({ 
-    message: 'Console de Conteúdo VeloHub API v3.1.2',
+    message: 'Console de Conteúdo VeloHub API v3.1.3',
     status: 'OK',
     timestamp: new Date().toISOString(),
     monitor: '/monitor.html'
@@ -162,7 +164,7 @@ const startServer = async () => {
     // Iniciar servidor
     server.listen(PORT, () => {
       console.log(`🚀 Servidor rodando na porta ${PORT}`);
-      console.log(`📊 Console de Conteúdo VeloHub v3.1.2`);
+      console.log(`📊 Console de Conteúdo VeloHub v3.1.3`);
       console.log(`🌐 Ambiente: ${process.env.NODE_ENV || 'development'}`);
       console.log(`📡 Monitor Skynet: http://localhost:${PORT}/monitor`);
     });
