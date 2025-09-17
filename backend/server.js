@@ -1,4 +1,4 @@
-// VERSION: v3.1.1 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.1.2 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -24,7 +24,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: process.env.NODE_ENV === 'production' 
-      ? [process.env.CORS_ORIGIN || 'https://front-console.vercel.app'] 
+      ? [process.env.FRONTEND_URL || 'https://front-console.vercel.app'] 
       : ['http://localhost:3000', 'http://localhost:3001'],
     methods: ["GET", "POST"]
   }
@@ -35,7 +35,7 @@ const PORT = process.env.PORT || 3001;
 app.use(helmet());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.CORS_ORIGIN || 'https://front-console.vercel.app'] 
+    ? [process.env.FRONTEND_URL || 'https://front-console.vercel.app'] 
     : ['http://localhost:3000'],
   credentials: true
 }));
@@ -66,20 +66,14 @@ app.use('/api/igp', igpRoutes);
 // Rota de health check
 app.get('/api/health', async (req, res) => {
   try {
-    let dbHealth = { status: 'disabled', message: 'MongoDB não configurado' };
-    let collectionsStats = {};
-    
-    // Verificar MongoDB apenas se não estiver no Vercel
-    if (process.env.VERCEL !== '1') {
-      dbHealth = await checkDatabaseHealth();
-      collectionsStats = await getCollectionsStats();
-    }
+    const dbHealth = await checkDatabaseHealth();
+    const collectionsStats = await getCollectionsStats();
     
     res.json({ 
       status: 'OK', 
       timestamp: new Date().toISOString(),
-      version: '3.1.1',
-      environment: process.env.VERCEL === '1' ? 'vercel' : 'local',
+      version: '3.1.2',
+      environment: process.env.NODE_ENV || 'development',
       database: dbHealth,
       collections: collectionsStats
     });
@@ -87,7 +81,7 @@ app.get('/api/health', async (req, res) => {
     res.status(500).json({ 
       status: 'ERROR', 
       timestamp: new Date().toISOString(),
-      version: '3.1.1',
+      version: '3.1.2',
       error: error.message
     });
   }
@@ -96,7 +90,7 @@ app.get('/api/health', async (req, res) => {
 // Rota raiz para verificar se a API está funcionando
 app.get('/', (req, res) => {
   res.json({ 
-    message: 'Console de Conteúdo VeloHub API v3.1.1',
+    message: 'Console de Conteúdo VeloHub API v3.1.2',
     status: 'OK',
     timestamp: new Date().toISOString(),
     monitor: '/monitor.html'
@@ -159,29 +153,22 @@ global.emitJson = emitJson;
 // Inicializar servidor
 const startServer = async () => {
   try {
-    // Conectar ao MongoDB apenas se não estiver no Vercel
-    if (process.env.VERCEL !== '1') {
-      await connectToDatabase();
-      await initializeCollections();
-      console.log(`🗄️ MongoDB: Conectado`);
-      console.log(`📊 Collections: Inicializadas`);
-    } else {
-      console.log(`🗄️ MongoDB: Modo Vercel (sem conexão)`);
-    }
+    // Conectar ao MongoDB
+    await connectToDatabase();
+    await initializeCollections();
+    console.log(`🗄️ MongoDB: Conectado`);
+    console.log(`📊 Collections: Inicializadas`);
     
     // Iniciar servidor
     server.listen(PORT, () => {
       console.log(`🚀 Servidor rodando na porta ${PORT}`);
-      console.log(`📊 Console de Conteúdo VeloHub v3.1.1`);
+      console.log(`📊 Console de Conteúdo VeloHub v3.1.2`);
       console.log(`🌐 Ambiente: ${process.env.NODE_ENV || 'development'}`);
       console.log(`📡 Monitor Skynet: http://localhost:${PORT}/monitor`);
     });
   } catch (error) {
     console.error('❌ Erro ao iniciar servidor:', error);
-    // No Vercel, não fazer exit(1) para evitar crash
-    if (process.env.VERCEL !== '1') {
-      process.exit(1);
-    }
+    process.exit(1);
   }
 };
 

@@ -20,3 +20,4 @@
 - Sempre que houver um deploy real para GCP ou push real para GitHub, atualize o DEPLOY_LOG.md com as informações precisas: data/hora, tipo, versão, arquivos modificados e descrição. Use os templates específicos para GCP e GitHub. Não registre configurações ou setups como deploys.
 - não realizar deploy do projeto, ou push no GitHub sem solicitar confirmação dessa ação. 
 - o nome Index.html deve ser evitado para que parem de ocorrer erros de integrações e redirecionamentos das paginas criadas. os nomes deverão refletir os trechos trabalhados.
+- Sempre certifique-se de estar fazendo o deploy ou o push para o destino correto.Pushes do git jamais deverão ser trocados de reporitório acidentalmente e deploys no vercel ou no GCP deverão ocorrer com precisão.

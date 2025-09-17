@@ -1,9 +1,9 @@
-// VERSION: v3.1.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.1.2 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const { MongoClient } = require('mongodb');
 
 // Configuração do MongoDB
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/console-conteudo-velohub';
-const DB_NAME = process.env.MONGODB_DB_NAME || 'console-conteudo-velohub';
+const DB_NAME = process.env.DB_NAME || 'console-conteudo-velohub';
 
 let client;
 let db;
