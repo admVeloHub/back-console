@@ -1,4 +1,4 @@
-// VERSION: v3.1.6 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.1.7 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -26,8 +26,11 @@ const io = new Server(server, {
     origin: process.env.NODE_ENV === 'production' 
       ? [`https://${process.env.FRONTEND_URL || 'front-console.vercel.app'}`] 
       : ['http://localhost:3000', 'http://localhost:3001'],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-  }
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true
+  },
+  transports: ['polling', 'websocket'],
+  allowEIO3: true
 });
 const PORT = process.env.PORT || 3001;
 
@@ -36,10 +39,11 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-hashes'", "https://fonts.googleapis.com"],
+      scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "ws:", "wss:"]
+      connectSrc: ["'self'", "ws:", "wss:", "https://back-console.vercel.app"]
     }
   }
 }));
@@ -179,7 +183,7 @@ const startServer = async () => {
     // Iniciar servidor
     server.listen(PORT, () => {
       console.log(`🚀 Servidor rodando na porta ${PORT}`);
-      console.log(`📊 Console de Conteúdo VeloHub v3.1.6`);
+      console.log(`📊 Console de Conteúdo VeloHub v3.1.7`);
       console.log(`🌐 Ambiente: ${process.env.NODE_ENV || 'development'}`);
       console.log(`📡 Monitor Skynet: http://localhost:${PORT}/monitor`);
     });
