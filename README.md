@@ -65,7 +65,7 @@ Para produção, use MongoDB Atlas:
 
 **Exemplo de MONGODB_URI:**
 ```
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/console-conteudo-velohub
+MONGODB_URI=mongodb+srv://lucasgravina:nKQu8bSN6iZl8FPo@velohubcentral.od7vwts.mongodb.net/?retryWrites=true&w=majority&appName=VelohubCentral
 ```
 
 ## 🚀 **Deploy**

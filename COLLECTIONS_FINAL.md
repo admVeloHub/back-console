@@ -43,7 +43,7 @@
 
 ### **Variáveis de Ambiente:**
 ```bash
-MONGODB_URI=mongodb+srv://lucasgravina:nKQu8bSN6iZl8FPo@clustercentral.quqgq6x.mongodb.net/velohub?retryWrites=true&w=majority&appName=ClusterCentral
+MONGODB_URI=mongodb+srv://lucasgravina:nKQu8bSN6iZl8FPo@velohubcentral.od7vwts.mongodb.net/?retryWrites=true&w=majority&appName=VelohubCentral
 MONGODB_DB_NAME=console_conteudo
 NODE_ENV=production
 ```

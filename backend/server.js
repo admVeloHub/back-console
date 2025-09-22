@@ -1,4 +1,4 @@
-// VERSION: v3.1.5 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.1.6 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -179,7 +179,7 @@ const startServer = async () => {
     // Iniciar servidor
     server.listen(PORT, () => {
       console.log(`🚀 Servidor rodando na porta ${PORT}`);
-      console.log(`📊 Console de Conteúdo VeloHub v3.1.5`);
+      console.log(`📊 Console de Conteúdo VeloHub v3.1.6`);
       console.log(`🌐 Ambiente: ${process.env.NODE_ENV || 'development'}`);
       console.log(`📡 Monitor Skynet: http://localhost:${PORT}/monitor`);
     });
