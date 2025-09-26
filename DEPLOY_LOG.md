@@ -38,4 +38,39 @@ Implementação completa dos endpoints de usuários para integração com MongoD
 
 ---
 
+## GitHub Push - 2024-12-19
+
+**Data/Hora:** 2024-12-19 15:45:00  
+**Tipo:** GitHub Push  
+**Versão:** v3.3.1  
+**Repositório:** admVeloHub/back-console  
+**Branch:** master  
+
+### Arquivos Modificados:
+- `backend/config/database.js` (v3.2.0)
+- `backend/models/Users.js` (v1.2.0)
+- `env.example` (v3.3.0)
+- `CONFIGURACAO_VERCEL.md`
+- `DEPLOY_LOG.md` - **NOVO**
+
+### Descrição:
+Correção crítica para usar database `console_config` correta:
+
+**Correções Implementadas:**
+- Adicionada variável `CONSOLE_CONFIG_DB=console_config`
+- Atualizado Users.js para usar database `console_config` específica
+- Atualizado database.js para suportar múltiplas databases
+- Corrigida conexão Mongoose para database correta
+- Atualizada documentação com nova variável de ambiente
+
+**Nova Variável de Ambiente Necessária no Vercel:**
+```
+CONSOLE_CONFIG_DB=console_config
+```
+
+**Commit Hash:** 704be7a  
+**Status:** ✅ Sucesso
+
+---
+
 *Log gerado automaticamente pelo sistema de deploy*

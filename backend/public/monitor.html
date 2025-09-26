@@ -25,6 +25,10 @@
             padding: 20px;
             text-align: center;
             border-bottom: 2px solid #00ff00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
         }
 
         .header h1 {
@@ -33,6 +37,17 @@
             color: #00ff00;
             text-shadow: 0 0 10px #00ff00;
             letter-spacing: 3px;
+            margin: 0;
+        }
+
+        .skynet-logo {
+            height: 69px;
+            width: auto;
+            filter: drop-shadow(0 0 5px #00ff00);
+        }
+
+        .skynet-logo.flipped {
+            transform: scaleX(-1);
         }
 
         .container {
@@ -190,7 +205,9 @@
 </head>
 <body>
     <div class="header">
+        <img src="/skynet.jpg" alt="Skynet Logo" class="skynet-logo flipped">
         <h1>SKYNET</h1>
+        <img src="/skynet.jpg" alt="Skynet Logo" class="skynet-logo">
         <div class="status-indicator" id="statusIndicator"></div>
     </div>
 

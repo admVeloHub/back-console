@@ -7,6 +7,8 @@ categoria_id
 categoria_titulo
 artigo_titulo
 artigo_conteudo
+createdAt
+updatedAt
 
 //schema console_conteudo.Bot_perguntas
 _id
@@ -14,6 +16,9 @@ Pergunta
 Resposta
 Palavras-chave
 Sinonimos
+Tabulação
+createdAt
+updatedAt
 
 //schema console_conteudo.Velonews
 _id
