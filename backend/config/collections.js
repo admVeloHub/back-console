@@ -1,11 +1,12 @@
-// VERSION: v3.1.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.2.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const { getDatabase } = require('./database');
 
 // Definir as collections do projeto
 const COLLECTIONS = {
   ARTIGOS: 'Artigos',
   VELONEWS: 'Velonews', 
-  BOT_PERGUNTAS: 'Bot_perguntas'
+  BOT_PERGUNTAS: 'Bot_perguntas',
+  USERS: 'users'
 };
 
 // Inicializar collections se necessário
@@ -45,6 +46,13 @@ const initializeCollections = async () => {
           await collection.createIndex({ createdAt: -1 });
           await collection.createIndex({ topic: 1 });
           await collection.createIndex({ question: 'text', context: 'text' });
+          break;
+          
+        case COLLECTIONS.USERS:
+          await collection.createIndex({ _userMail: 1 }, { unique: true });
+          await collection.createIndex({ _userId: 1 }, { unique: true });
+          await collection.createIndex({ _userRole: 1 });
+          await collection.createIndex({ _userClearance: 1 });
           break;
       }
     }

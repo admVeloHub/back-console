@@ -1,4 +1,4 @@
-// VERSION: v3.2.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.3.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -18,6 +18,7 @@ const igpRoutes = require('./routes/igp');
 const tkConteudosRoutes = require('./routes/tkConteudos');
 const tkGestaoRoutes = require('./routes/tkGestao');
 const userPingRoutes = require('./routes/userPing');
+const usersRoutes = require('./routes/users');
 
 // Importar middleware
 const { checkMonitoringFunctions } = require('./middleware/monitoring');
@@ -89,6 +90,7 @@ app.use('/api/igp', igpRoutes);
 app.use('/api/tk-conteudos', tkConteudosRoutes);
 app.use('/api/tk-gestao', tkGestaoRoutes);
 app.use('/api/user-ping', userPingRoutes);
+app.use('/api/users', usersRoutes);
 
 // Rota de health check
 app.get('/api/health', async (req, res) => {
@@ -99,7 +101,7 @@ app.get('/api/health', async (req, res) => {
     res.json({ 
       status: 'OK', 
       timestamp: new Date().toISOString(),
-      version: '3.2.0',
+      version: '3.3.0',
       environment: process.env.NODE_ENV || 'development',
       database: dbHealth,
       collections: collectionsStats
@@ -108,7 +110,7 @@ app.get('/api/health', async (req, res) => {
     res.status(500).json({ 
       status: 'ERROR', 
       timestamp: new Date().toISOString(),
-      version: '3.2.0',
+      version: '3.3.0',
       error: error.message
     });
   }
@@ -117,7 +119,7 @@ app.get('/api/health', async (req, res) => {
 // Rota raiz para verificar se a API está funcionando
 app.get('/', (req, res) => {
   res.json({ 
-    message: 'Console de Conteúdo VeloHub API v3.2.0',
+    message: 'Console de Conteúdo VeloHub API v3.3.0',
     status: 'OK',
     timestamp: new Date().toISOString(),
     monitor: '/monitor.html'
@@ -189,7 +191,7 @@ const startServer = async () => {
     // Iniciar servidor
     server.listen(PORT, () => {
       console.log(`🚀 Servidor rodando na porta ${PORT}`);
-      console.log(`📊 Console de Conteúdo VeloHub v3.2.0`);
+      console.log(`📊 Console de Conteúdo VeloHub v3.3.0`);
       console.log(`🌐 Ambiente: ${process.env.NODE_ENV || 'development'}`);
       console.log(`📡 Monitor Skynet: http://localhost:${PORT}/monitor`);
     });

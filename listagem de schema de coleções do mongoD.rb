@@ -51,3 +51,10 @@ _data_hora
 _userId
 _collectionId
 
+// Schema Config
+_id:
+_userMail:
+_userId:
+_userRole:
+_userClearance:
+_userTickets:
