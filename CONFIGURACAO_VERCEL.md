@@ -5,6 +5,7 @@
 ```bash
 MONGODB_URI=mongodb+srv://lucasgravina:nKQu8bSN6iZl8FPo@velohubcentral.od7vwts.mongodb.net/?retryWrites=true&w=majority&appName=VelohubCentral
 MONGODB_DB_NAME=console_conteudo
+CONSOLE_CONFIG_DB=console_config
 NODE_ENV=production
 CORS_ORIGIN=https://front-console.vercel.app
 ```

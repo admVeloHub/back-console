@@ -1,5 +1,16 @@
-// VERSION: v1.1.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v1.2.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const mongoose = require('mongoose');
+
+// Configurar conexão específica para o database console_config
+const CONFIG_DB_NAME = process.env.CONSOLE_CONFIG_DB || 'console_config';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://lucasgravina:nKQu8bSN6iZl8FPo@velohubcentral.od7vwts.mongodb.net/?retryWrites=true&w=majority&appName=VelohubCentral';
+
+// Criar conexão específica para o database de configuração
+const configConnection = mongoose.createConnection(MONGODB_URI, {
+  dbName: CONFIG_DB_NAME,
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
 
 const userSchema = new mongoose.Schema({
   _userMail: {
@@ -77,4 +88,4 @@ userSchema.index({ _userMail: 1 });
 userSchema.index({ _userId: 1 });
 userSchema.index({ _userRole: 1 });
 
-module.exports = mongoose.model('Users', userSchema, 'users');
+module.exports = configConnection.model('Users', userSchema, 'users');

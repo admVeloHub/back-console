@@ -1,12 +1,14 @@
-// VERSION: v3.1.5 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.2.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const { MongoClient } = require('mongodb');
 
 // Configuração do MongoDB
-const MONGODB_URI = 'mongodb+srv://lucasgravina:nKQu8bSN6iZl8FPo@velohubcentral.od7vwts.mongodb.net/?retryWrites=true&w=majority&appName=VelohubCentral';
-const DB_NAME = process.env.DB_NAME || 'console-conteudo-velohub';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://lucasgravina:nKQu8bSN6iZl8FPo@velohubcentral.od7vwts.mongodb.net/?retryWrites=true&w=majority&appName=VelohubCentral';
+const DB_NAME = process.env.MONGODB_DB_NAME || 'console_conteudo';
+const CONFIG_DB_NAME = process.env.CONSOLE_CONFIG_DB || 'console_config';
 
 let client;
 let db;
+let configDb;
 
 // Conectar ao MongoDB
 const connectToDatabase = async () => {
@@ -24,6 +26,10 @@ const connectToDatabase = async () => {
       db = client.db(DB_NAME);
     }
     
+    if (!configDb) {
+      configDb = client.db(CONFIG_DB_NAME);
+    }
+    
     return db;
   } catch (error) {
     console.error('❌ Erro ao conectar ao MongoDB:', error);
@@ -31,12 +37,20 @@ const connectToDatabase = async () => {
   }
 };
 
-// Obter instância do banco
+// Obter instância do banco principal
 const getDatabase = () => {
   if (!db) {
     throw new Error('Database não conectado. Chame connectToDatabase() primeiro.');
   }
   return db;
+};
+
+// Obter instância do banco de configuração
+const getConfigDatabase = () => {
+  if (!configDb) {
+    throw new Error('Config Database não conectado. Chame connectToDatabase() primeiro.');
+  }
+  return configDb;
 };
 
 // Fechar conexão
@@ -61,6 +75,7 @@ const checkDatabaseHealth = async () => {
 module.exports = {
   connectToDatabase,
   getDatabase,
+  getConfigDatabase,
   closeDatabase,
   checkDatabaseHealth
 };
