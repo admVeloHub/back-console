@@ -1,4 +1,4 @@
-// VERSION: v1.1.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v2.1.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const ModuleStatus = require('../models/ModuleStatus');
@@ -6,24 +6,44 @@ const ModuleStatus = require('../models/ModuleStatus');
 // GET /api/module-status - Buscar status atual de todos os módulos
 router.get('/', async (req, res) => {
   try {
-    const statuses = await ModuleStatus.find({}).select('-__v -_id -createdAt -updatedAt');
+    if (global.emitTraffic) {
+      global.emitTraffic('ModuleStatus', 'received', 'Entrada recebida - GET /api/module-status');
+    }
+    if (global.emitLog) {
+      global.emitLog('info', 'GET /api/module-status - Buscando status de todos os módulos');
+    }
     
-    // Transformar array em objeto com moduleKey como chave
-    const result = {};
-    statuses.forEach(item => {
-      result[item.moduleKey] = item.status;
-    });
+    // Buscar o documento único de status (ou criar se não existir)
+    let statusDoc = await ModuleStatus.findOne({});
     
-    // Garantir que todos os 5 módulos estejam presentes
-    const allModules = ['credito-trabalhador', 'credito-pessoal', 'antecipacao', 'pagamento-antecipado', 'modulo-irpf'];
-    allModules.forEach(moduleKey => {
-      if (!result[moduleKey]) {
-        result[moduleKey] = 'off'; // Status padrão
+    // Se não existir, criar documento padrão
+    if (!statusDoc) {
+      if (global.emitTraffic) {
+        global.emitTraffic('ModuleStatus', 'processing', 'Criando documento padrão no MongoDB');
       }
-    });
+      statusDoc = new ModuleStatus({});
+      await statusDoc.save();
+    } else {
+      if (global.emitTraffic) {
+        global.emitTraffic('ModuleStatus', 'processing', 'Consultando documento existente no MongoDB');
+      }
+    }
+    
+    // Mapear campos do schema para nomes do frontend
+    const result = {
+      'credito-trabalhador': statusDoc._trabalhador,
+      'credito-pessoal': statusDoc._pessoal,
+      'antecipacao': statusDoc._antecipacao,
+      'pagamento-antecipado': statusDoc._pgtoAntecip,
+      'modulo-irpf': statusDoc._irpf
+    };
     
     if (global.emitTraffic) {
-      global.emitTraffic('GET /api/module-status', 'SUCCESS', `Status de ${Object.keys(result).length} módulos obtidos`);
+      global.emitTraffic('ModuleStatus', 'completed', `Status de ${Object.keys(result).length} módulos obtidos`);
+    }
+    
+    if (global.emitJson) {
+      global.emitJson(result);
     }
     
     res.json(result);
@@ -31,7 +51,7 @@ router.get('/', async (req, res) => {
     console.error('Erro ao buscar status dos módulos:', error);
     
     if (global.emitTraffic) {
-      global.emitTraffic('GET /api/module-status', 'ERROR', error.message);
+      global.emitTraffic('ModuleStatus', 'error', error.message);
     }
     
     res.status(500).json({
@@ -45,6 +65,16 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { moduleKey, status, updatedBy } = req.body;
+    
+    if (global.emitTraffic) {
+      global.emitTraffic('ModuleStatus', 'received', `Entrada recebida - POST /api/module-status - ${moduleKey}: ${status}`);
+    }
+    if (global.emitLog) {
+      global.emitLog('info', `POST /api/module-status - Atualizando módulo ${moduleKey} para ${status}`);
+    }
+    if (global.emitJson) {
+      global.emitJson({ moduleKey, status, updatedBy });
+    }
     
     // Validações básicas
     if (!moduleKey || !status) {
@@ -71,14 +101,26 @@ router.post('/', async (req, res) => {
       });
     }
     
-    // Atualizar ou criar
+    // Mapear moduleKey para campo do schema
+    const fieldMapping = {
+      'credito-trabalhador': '_trabalhador',
+      'credito-pessoal': '_pessoal',
+      'antecipacao': '_antecipacao',
+      'pagamento-antecipado': '_pgtoAntecip',
+      'modulo-irpf': '_irpf'
+    };
+    
+    const fieldName = fieldMapping[moduleKey];
+    const updateData = { [fieldName]: status };
+    
+    if (global.emitTraffic) {
+      global.emitTraffic('ModuleStatus', 'processing', `Atualizando campo ${fieldName} no MongoDB`);
+    }
+    
+    // Atualizar ou criar documento único
     const updatedModule = await ModuleStatus.findOneAndUpdate(
-      { moduleKey },
-      { 
-        status, 
-        updatedAt: new Date(),
-        updatedBy: updatedBy || null
-      },
+      {},
+      updateData,
       { 
         upsert: true, 
         new: true, 
@@ -88,26 +130,31 @@ router.post('/', async (req, res) => {
     
     console.log(`Status do módulo ${moduleKey} atualizado para ${status}${updatedBy ? ` por ${updatedBy}` : ''}`);
     
-    if (global.emitTraffic) {
-      global.emitTraffic('POST /api/module-status', 'SUCCESS', `Módulo ${moduleKey} atualizado para ${status}`);
-    }
-    
-    res.json({
+    const responseData = {
       success: true,
       message: `Status do ${moduleKey} atualizado para ${status}`,
       data: {
-        moduleKey: updatedModule.moduleKey,
-        status: updatedModule.status,
-        updatedAt: updatedModule.updatedAt,
-        updatedBy: updatedModule.updatedBy
+        moduleKey: moduleKey,
+        status: status,
+        updatedAt: updatedModule.updatedAt
       }
-    });
+    };
+    
+    if (global.emitTraffic) {
+      global.emitTraffic('ModuleStatus', 'completed', `Módulo ${moduleKey} atualizado para ${status}`);
+    }
+    
+    if (global.emitJson) {
+      global.emitJson(responseData);
+    }
+    
+    res.json(responseData);
     
   } catch (error) {
     console.error('Erro ao atualizar módulo:', error);
     
     if (global.emitTraffic) {
-      global.emitTraffic('POST /api/module-status', 'ERROR', error.message);
+      global.emitTraffic('ModuleStatus', 'error', error.message);
     }
     
     res.status(500).json({
@@ -123,6 +170,16 @@ router.put('/', async (req, res) => {
     const modules = req.body;
     const updatedBy = modules.updatedBy || null;
     
+    if (global.emitTraffic) {
+      global.emitTraffic('ModuleStatus', 'received', `Entrada recebida - PUT /api/module-status - ${Object.keys(modules).length} módulos`);
+    }
+    if (global.emitLog) {
+      global.emitLog('info', `PUT /api/module-status - Atualizando ${Object.keys(modules).length} módulos`);
+    }
+    if (global.emitJson) {
+      global.emitJson(modules);
+    }
+    
     // Remover updatedBy do objeto de módulos se presente
     delete modules.updatedBy;
     
@@ -135,7 +192,15 @@ router.put('/', async (req, res) => {
     
     const validKeys = ['credito-trabalhador', 'credito-pessoal', 'antecipacao', 'pagamento-antecipado', 'modulo-irpf'];
     const validStatuses = ['on', 'off', 'revisao'];
-    const results = [];
+    
+    // Mapear moduleKey para campo do schema
+    const fieldMapping = {
+      'credito-trabalhador': '_trabalhador',
+      'credito-pessoal': '_pessoal',
+      'antecipacao': '_antecipacao',
+      'pagamento-antecipado': '_pgtoAntecip',
+      'modulo-irpf': '_irpf'
+    };
     
     // Validar todos os dados antes de fazer qualquer atualização
     for (const [moduleKey, status] of Object.entries(modules)) {
@@ -154,46 +219,60 @@ router.put('/', async (req, res) => {
       }
     }
     
-    // Atualizar todos os módulos
+    // Preparar dados de atualização
+    const updateData = {};
+    const results = [];
+    
     for (const [moduleKey, status] of Object.entries(modules)) {
-      const updatedModule = await ModuleStatus.findOneAndUpdate(
-        { moduleKey },
-        { 
-          status, 
-          updatedAt: new Date(),
-          updatedBy: updatedBy || null
-        },
-        { 
-          upsert: true, 
-          new: true, 
-          runValidators: true 
-        }
-      );
-      
+      const fieldName = fieldMapping[moduleKey];
+      updateData[fieldName] = status;
       results.push({
-        moduleKey: updatedModule.moduleKey,
-        status: updatedModule.status,
-        updatedAt: updatedModule.updatedAt
+        moduleKey: moduleKey,
+        status: status
       });
     }
     
-    console.log(`Múltiplos módulos atualizados: ${Object.keys(modules).length} módulos${updatedBy ? ` por ${updatedBy}` : ''}`);
-    
     if (global.emitTraffic) {
-      global.emitTraffic('PUT /api/module-status', 'SUCCESS', `${Object.keys(modules).length} módulos atualizados`);
+      global.emitTraffic('ModuleStatus', 'processing', `Atualizando ${Object.keys(updateData).length} campos no MongoDB`);
     }
     
-    res.json({
+    // Atualizar documento único com todos os campos
+    const updatedModule = await ModuleStatus.findOneAndUpdate(
+      {},
+      updateData,
+      { 
+        upsert: true, 
+        new: true, 
+        runValidators: true 
+      }
+    );
+    
+    console.log(`Múltiplos módulos atualizados: ${Object.keys(modules).length} módulos${updatedBy ? ` por ${updatedBy}` : ''}`);
+    
+    const responseData = {
       success: true,
       message: `${Object.keys(modules).length} módulos atualizados com sucesso`,
-      data: results
-    });
+      data: results.map(result => ({
+        ...result,
+        updatedAt: updatedModule.updatedAt
+      }))
+    };
+    
+    if (global.emitTraffic) {
+      global.emitTraffic('ModuleStatus', 'completed', `${Object.keys(modules).length} módulos atualizados`);
+    }
+    
+    if (global.emitJson) {
+      global.emitJson(responseData);
+    }
+    
+    res.json(responseData);
     
   } catch (error) {
     console.error('Erro ao atualizar múltiplos módulos:', error);
     
     if (global.emitTraffic) {
-      global.emitTraffic('PUT /api/module-status', 'ERROR', error.message);
+      global.emitTraffic('ModuleStatus', 'error', error.message);
     }
     
     res.status(500).json({

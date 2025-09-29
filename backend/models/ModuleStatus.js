@@ -1,4 +1,4 @@
-// VERSION: v1.1.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v2.0.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const mongoose = require('mongoose');
 
 // Configurar conexão específica para o database console_config
@@ -13,25 +13,35 @@ const configConnection = mongoose.createConnection(MONGODB_URI, {
 });
 
 const moduleStatusSchema = new mongoose.Schema({
-  moduleKey: {
+  _trabalhador: {
     type: String,
     required: true,
-    unique: true,
-    enum: ['credito-trabalhador', 'credito-pessoal', 'antecipacao', 'pagamento-antecipado', 'modulo-irpf']
-  },
-  status: {
-    type: String,
-    required: true,
+    default: 'off',
     enum: ['on', 'off', 'revisao']
   },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedBy: {
+  _pessoal: {
     type: String,
-    required: false,
-    trim: true
+    required: true,
+    default: 'off',
+    enum: ['on', 'off', 'revisao']
+  },
+  _antecipacao: {
+    type: String,
+    required: true,
+    default: 'off',
+    enum: ['on', 'off', 'revisao']
+  },
+  _pgtoAntecip: {
+    type: String,
+    required: true,
+    default: 'off',
+    enum: ['on', 'off', 'revisao']
+  },
+  _irpf: {
+    type: String,
+    required: true,
+    default: 'off',
+    enum: ['on', 'off', 'revisao']
   }
 }, {
   timestamps: true,
@@ -39,8 +49,11 @@ const moduleStatusSchema = new mongoose.Schema({
 });
 
 // Índices para otimização
-moduleStatusSchema.index({ moduleKey: 1 });
-moduleStatusSchema.index({ status: 1 });
+moduleStatusSchema.index({ _trabalhador: 1 });
+moduleStatusSchema.index({ _pessoal: 1 });
+moduleStatusSchema.index({ _antecipacao: 1 });
+moduleStatusSchema.index({ _pgtoAntecip: 1 });
+moduleStatusSchema.index({ _irpf: 1 });
 moduleStatusSchema.index({ updatedAt: -1 });
 
 module.exports = configConnection.model('ModuleStatus', moduleStatusSchema, 'module_status');
