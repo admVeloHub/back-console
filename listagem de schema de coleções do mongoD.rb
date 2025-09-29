@@ -63,3 +63,13 @@ _userId:
 _userRole:
 _userClearance:
 _userTickets:
+
+//schema console_config.module_status
+_id
+moduleKey
+status
+updatedAt
+updatedBy
+createdAt
+updatedAt
+
