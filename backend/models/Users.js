@@ -1,4 +1,4 @@
-// VERSION: v1.2.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v1.3.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const mongoose = require('mongoose');
 
 // Configurar conexão específica para o database console_config
@@ -39,7 +39,8 @@ const userSchema = new mongoose.Schema({
       igp: { type: Boolean, default: false },
       qualidade: { type: Boolean, default: false },
       capacity: { type: Boolean, default: false },
-      config: { type: Boolean, default: false }
+      config: { type: Boolean, default: false },
+      servicos: { type: Boolean, default: false }
     },
     required: true,
     default: {
@@ -50,7 +51,8 @@ const userSchema = new mongoose.Schema({
       igp: false,
       qualidade: false,
       capacity: false,
-      config: false
+      config: false,
+      servicos: false
     }
   },
   _userTickets: {

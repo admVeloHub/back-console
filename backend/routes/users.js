@@ -1,4 +1,4 @@
-// VERSION: v1.1.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v1.2.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const Users = require('../models/Users');
@@ -68,7 +68,8 @@ router.post('/', async (req, res) => {
         igp: false,
         qualidade: false,
         capacity: false,
-        config: false
+        config: false,
+        servicos: false
       },
       _userTickets: _userTickets || {
         artigos: false,
