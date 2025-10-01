@@ -1,14 +1,16 @@
-// VERSION: v3.2.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.3.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const { MongoClient } = require('mongodb');
 
 // Configuração do MongoDB
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://lucasgravina:nKQu8bSN6iZl8FPo@velohubcentral.od7vwts.mongodb.net/?retryWrites=true&w=majority&appName=VelohubCentral';
 const DB_NAME = process.env.MONGODB_DB_NAME || 'console_conteudo';
 const CONFIG_DB_NAME = process.env.CONSOLE_CONFIG_DB || 'console_config';
+const ANALISES_DB_NAME = process.env.CONSOLE_ANALISES_DB || 'console_analises';
 
 let client;
 let db;
 let configDb;
+let analisesDb;
 
 // Conectar ao MongoDB
 const connectToDatabase = async () => {
@@ -28,6 +30,10 @@ const connectToDatabase = async () => {
     
     if (!configDb) {
       configDb = client.db(CONFIG_DB_NAME);
+    }
+    
+    if (!analisesDb) {
+      analisesDb = client.db(ANALISES_DB_NAME);
     }
     
     return db;
@@ -53,6 +59,14 @@ const getConfigDatabase = () => {
   return configDb;
 };
 
+// Obter instância do banco de análises
+const getAnalisesDatabase = () => {
+  if (!analisesDb) {
+    throw new Error('Analises Database não conectado. Chame connectToDatabase() primeiro.');
+  }
+  return analisesDb;
+};
+
 // Fechar conexão
 const closeDatabase = async () => {
   if (client) {
@@ -76,6 +90,7 @@ module.exports = {
   connectToDatabase,
   getDatabase,
   getConfigDatabase,
+  getAnalisesDatabase,
   closeDatabase,
   checkDatabaseHealth
 };

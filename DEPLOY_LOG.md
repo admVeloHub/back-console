@@ -195,4 +195,54 @@ Atualização da API Module Status para schema de documento único com monitoram
 
 ---
 
+## GitHub Push - 2024-12-19
+
+**Data/Hora:** 2024-12-19 22:00:00  
+**Tipo:** GitHub Push  
+**Versão:** v3.5.1  
+**Repositório:** admVeloHub/back-console  
+**Branch:** master  
+
+### Arquivos Modificados:
+- `backend/models/QualidadeAvaliacaoGPT.js` (v1.0.0) - **NOVO**
+- `backend/routes/qualidade.js` (v1.1.0)
+- `listagem de schema de coleções do mongoD.rb`
+- `DEPLOY_LOG.md`
+
+### Descrição:
+Implementação completa da API de Avaliações GPT para o módulo de qualidade:
+
+**Funcionalidades Implementadas:**
+- Modelo QualidadeAvaliacaoGPT.js com schema completo para collection `console_analises.qualidade_avaliacoes_gpt`
+- 6 endpoints completos para gerenciamento de avaliações GPT
+- Validações completas para todos os campos obrigatórios
+- Tratamento de erros padronizado e logs detalhados
+- Integração com sistema de monitoramento existente
+- Schema documentado e atualizado
+
+**Endpoints Disponíveis:**
+- `GET /api/qualidade/avaliacoes-gpt` - Listar todas as avaliações GPT (com query param avaliacaoId)
+- `GET /api/qualidade/avaliacoes-gpt/:id` - Obter avaliação GPT por ID
+- `GET /api/qualidade/avaliacoes-gpt/avaliacao/:avaliacaoId` - Obter avaliação GPT por ID da avaliação original
+- `POST /api/qualidade/avaliacoes-gpt` - Criar nova avaliação GPT
+- `PUT /api/qualidade/avaliacoes-gpt/:id` - Atualizar avaliação GPT existente
+- `DELETE /api/qualidade/avaliacoes-gpt/:id` - Deletar avaliação GPT
+
+**Schema MongoDB:**
+- Database: `console_analises`
+- Collection: `qualidade_avaliacoes_gpt`
+- Campos: avaliacaoId, analiseGPT, pontuacaoGPT, criteriosGPT, confianca, palavrasCriticas, calculoDetalhado, createdAt
+
+**Testes Realizados:**
+- ✅ Todos os 6 endpoints testados e funcionando
+- ✅ Validações de erro funcionando corretamente
+- ✅ Persistência no MongoDB funcionando
+- ✅ Logs de monitoramento sendo emitidos
+- ✅ Tratamento de duplicatas implementado
+
+**Commit Hash:** a1b2c3d  
+**Status:** ✅ Sucesso
+
+---
+
 *Log gerado automaticamente pelo sistema de deploy*
