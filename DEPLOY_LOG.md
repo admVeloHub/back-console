@@ -421,4 +421,79 @@ Implementação do campo _funcoesAdministrativas no schema de usuários para sup
 
 ---
 
+## GitHub Push - 2024-12-19
+
+**Data/Hora:** 2024-12-19 23:59:00  
+**Tipo:** GitHub Push  
+**Versão:** v3.9.0  
+**Repositório:** admVeloHub/back-console  
+**Branch:** master  
+
+### Arquivos Modificados:
+- `backend/models/BotPerguntas.js` (v3.3.0)
+- `backend/models/Velonews.js` (v3.2.0)
+- `backend/models/QualidadeFuncionario.js` (v1.1.0)
+- `backend/models/QualidadeAvaliacaoGPT.js` (v1.1.0)
+- `backend/routes/qualidade.js` (v3.5.0)
+- `listagem de schema de coleções do mongoD.rb`
+- `DEPLOY_LOG.md`
+
+### Descrição:
+Padronização completa dos schemas MongoDB - Backend totalmente alinhado com frontend e documentação:
+
+**Funcionalidades Implementadas:**
+- Padronização completa de nomenclatura em todos os modelos
+- Alinhamento total entre frontend, backend e documentação
+- Compatibilidade garantida com campos padronizados
+- Validações e endpoints atualizados
+
+**Alterações Técnicas:**
+- **BotPerguntas.js**: Campos padronizados (pergunta, resposta, palavrasChave, sinonimos, tabulacao)
+- **Velonews.js**: Campos padronizados (titulo, conteudo)
+- **QualidadeFuncionario.js**: Campo padronizado (colaboradorNome)
+- **QualidadeAvaliacaoGPT.js**: Campo padronizado (avaliacao_id como ObjectId)
+- **qualidade.js**: Endpoints e validações atualizados para campos padronizados
+- **Documentação**: Schemas atualizados com campos padronizados
+
+**Schemas Padronizados:**
+```json
+// Bot_perguntas
+{
+  "pergunta": "String",
+  "resposta": "String", 
+  "palavrasChave": "String",
+  "sinonimos": "String",
+  "tabulacao": "String"
+}
+
+// Velonews
+{
+  "titulo": "String",
+  "conteudo": "String"
+}
+
+// qualidade_funcionarios
+{
+  "colaboradorNome": "String"
+}
+
+// qualidade_avaliacoes_gpt
+{
+  "avaliacao_id": "ObjectId"
+}
+```
+
+**Benefícios:**
+- ✅ Nomenclatura unificada em todo o sistema
+- ✅ Compatibilidade total entre frontend e backend
+- ✅ Documentação alinhada com implementação
+- ✅ Validações funcionando com campos corretos
+- ✅ Endpoints atualizados para campos padronizados
+- ✅ Sistema totalmente padronizado
+
+**Commit Hash:** 53378bd  
+**Status:** ✅ Sucesso
+
+---
+
 *Log gerado automaticamente pelo sistema de deploy*
