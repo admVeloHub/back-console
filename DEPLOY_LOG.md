@@ -240,8 +240,58 @@ Implementação completa da API de Avaliações GPT para o módulo de qualidade:
 - ✅ Logs de monitoramento sendo emitidos
 - ✅ Tratamento de duplicatas implementado
 
-**Commit Hash:** a1b2c3d  
+**Commit Hash:** 5165e9e  
 **Status:** ✅ Sucesso
+
+---
+
+## GitHub Push - 2024-12-19
+
+**Data/Hora:** 2024-12-19 23:45:00  
+**Tipo:** GitHub Push  
+**Versão:** v3.6.0  
+**Repositório:** admVeloHub/back-console  
+**Branch:** master  
+
+### Arquivos Modificados:
+- `backend/models/BotPerguntas.js` (v3.2.0)
+- `backend/routes/botPerguntas.js` (v3.2.0)
+- `DEPLOY_LOG.md`
+
+### Descrição:
+Adequação completa do endpoint POST /api/bot-perguntas para schema MongoDB padrão:
+
+**Problema Resolvido:**
+- Backend estava rejeitando dados com erro "Dados obrigatórios ausentes"
+- Endpoint esperava campos diferentes do schema padrão definido nas diretrizes
+
+**Alterações Implementadas:**
+- Schema atualizado para usar campos padrão: Pergunta, Resposta, "Palavras-chave", Sinonimos, Tabulação
+- Validação corrigida para campos obrigatórios: Pergunta, Resposta e "Palavras-chave"
+- Mapeamento correto de dados do frontend para schema MongoDB
+- Adição automática de createdAt e updatedAt
+- Método getByPergunta() atualizado para busca por campo Pergunta
+
+**Funcionalidades Validadas:**
+- ✅ Aceita exatamente os campos do schema MongoDB padrão
+- ✅ Valida campos obrigatórios: Pergunta, Resposta, "Palavras-chave"
+- ✅ Adiciona automaticamente createdAt e updatedAt
+- ✅ Retorna sucesso quando dados válidos são enviados
+- ✅ Compatível com dados enviados pelo frontend
+
+**Teste Realizado:**
+```json
+{
+  "Pergunta": "Crédito Pessoal - Nova Contratação",
+  "Resposta": "Nova Contratação: O cliente pode realizar uma nova contratação...",
+  "Palavras-chave": "crédito pessoal, nova contratação, quitação, análise de crédito, elegibilidade",
+  "Sinonimos": "nova simulação, contratar novamente, novo credito",
+  "Tabulação": "Empréstimo Pessoal | Crédito >Elegibilidade > Como Contratar"
+}
+```
+
+**Commit Hash:** [Pendente]  
+**Status:** ✅ Pronto para Deploy
 
 ---
 

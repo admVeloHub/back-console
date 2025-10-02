@@ -1,4 +1,4 @@
-// VERSION: v3.1.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.2.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const { getDatabase } = require('../config/database');
 
 class BotPerguntas {
@@ -17,7 +17,11 @@ class BotPerguntas {
     try {
       const collection = this.getCollection();
       const pergunta = {
-        ...perguntaData,
+        Pergunta: perguntaData.Pergunta,
+        Resposta: perguntaData.Resposta,
+        "Palavras-chave": perguntaData["Palavras-chave"],
+        Sinonimos: perguntaData.Sinonimos || '',
+        Tabulação: perguntaData.Tabulação || '',
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -91,9 +95,15 @@ class BotPerguntas {
       const { ObjectId } = require('mongodb');
       
       const updateDoc = {
-        ...updateData,
         updatedAt: new Date()
       };
+
+      // Mapear campos do schema padrão
+      if (updateData.Pergunta) updateDoc.Pergunta = updateData.Pergunta;
+      if (updateData.Resposta) updateDoc.Resposta = updateData.Resposta;
+      if (updateData["Palavras-chave"]) updateDoc["Palavras-chave"] = updateData["Palavras-chave"];
+      if (updateData.Sinonimos !== undefined) updateDoc.Sinonimos = updateData.Sinonimos;
+      if (updateData.Tabulação !== undefined) updateDoc.Tabulação = updateData.Tabulação;
 
       const result = await collection.updateOne(
         { _id: new ObjectId(id) },
@@ -167,11 +177,11 @@ class BotPerguntas {
     }
   }
 
-  // Buscar por tópico
-  async getByTopic(topic) {
+  // Buscar por pergunta
+  async getByPergunta(pergunta) {
     try {
       const collection = this.getCollection();
-      const perguntas = await collection.find({ topic: topic }).sort({ createdAt: -1 }).toArray();
+      const perguntas = await collection.find({ Pergunta: { $regex: pergunta, $options: 'i' } }).sort({ createdAt: -1 }).toArray();
       
       return {
         success: true,
@@ -179,7 +189,7 @@ class BotPerguntas {
         count: perguntas.length
       };
     } catch (error) {
-      console.error('Erro ao buscar perguntas por tópico:', error);
+      console.error('Erro ao buscar perguntas:', error);
       return {
         success: false,
         error: 'Erro interno do servidor'
