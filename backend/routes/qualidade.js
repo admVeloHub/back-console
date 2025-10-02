@@ -1,4 +1,4 @@
-// VERSION: v3.5.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.6.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const QualidadeFuncionario = require('../models/QualidadeFuncionario');
@@ -86,10 +86,19 @@ const validateAvaliacao = (req, res, next) => {
     });
   }
   
-  if (!ano || typeof ano !== 'number') {
+  if (!ano) {
     return res.status(400).json({
       success: false,
-      message: 'Ano é obrigatório e deve ser um número'
+      message: 'Ano é obrigatório'
+    });
+  }
+  
+  // Converter ano para número se for string
+  const anoNumber = typeof ano === 'string' ? parseInt(ano, 10) : ano;
+  if (isNaN(anoNumber)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Ano deve ser um número válido'
     });
   }
   
@@ -435,6 +444,11 @@ router.post('/avaliacoes', validateAvaliacao, async (req, res) => {
       avaliacaoData.dataAvaliacao = new Date(avaliacaoData.dataAvaliacao);
     }
     
+    // Converter ano para número se for string
+    if (avaliacaoData.ano && typeof avaliacaoData.ano === 'string') {
+      avaliacaoData.ano = parseInt(avaliacaoData.ano, 10);
+    }
+    
     global.emitTraffic('Qualidade Avaliações', 'processing', 'Transmitindo para DB');
     const novaAvaliacao = new QualidadeAvaliacao(avaliacaoData);
     const avaliacaoSalva = await novaAvaliacao.save();
@@ -479,6 +493,11 @@ router.put('/avaliacoes/:id', validateAvaliacao, async (req, res) => {
     const updateData = { ...req.body };
     if (updateData.dataAvaliacao) {
       updateData.dataAvaliacao = new Date(updateData.dataAvaliacao);
+    }
+    
+    // Converter ano para número se for string
+    if (updateData.ano && typeof updateData.ano === 'string') {
+      updateData.ano = parseInt(updateData.ano, 10);
     }
     
     const avaliacaoAtualizada = await QualidadeAvaliacao.findByIdAndUpdate(
