@@ -290,8 +290,8 @@ Adequação completa do endpoint POST /api/bot-perguntas para schema MongoDB pad
 }
 ```
 
-**Commit Hash:** [Pendente]  
-**Status:** ✅ Pronto para Deploy
+**Commit Hash:** 77f32d8  
+**Status:** ✅ Sucesso
 
 ---
 
