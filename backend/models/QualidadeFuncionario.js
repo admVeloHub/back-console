@@ -31,7 +31,7 @@ const acessoSchema = new mongoose.Schema({
 
 // Schema principal para qualidade_funcionarios
 const qualidadeFuncionarioSchema = new mongoose.Schema({
-  nomeCompleto: {
+  colaboradorNome: {
     type: String,
     required: true,
     trim: true
@@ -104,10 +104,11 @@ qualidadeFuncionarioSchema.pre('findOneAndUpdate', function(next) {
 });
 
 // Índices para otimização de consultas
+qualidadeFuncionarioSchema.index({ colaboradorNome: 1 });
 qualidadeFuncionarioSchema.index({ empresa: 1 });
 qualidadeFuncionarioSchema.index({ desligado: 1, afastado: 1 });
 qualidadeFuncionarioSchema.index({ createdAt: -1 });
 
 module.exports = analisesConnection.model('QualidadeFuncionario', qualidadeFuncionarioSchema, 'qualidade_funcionarios');
 
-// VERSION: v1.0.0 | DATE: 2024-12-19 | AUTHOR: Lucas Gravina - VeloHub Development Team
+// VERSION: v1.1.0 | DATE: 2024-12-19 | AUTHOR: Lucas Gravina - VeloHub Development Team

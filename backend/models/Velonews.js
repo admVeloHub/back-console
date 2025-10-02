@@ -1,4 +1,4 @@
-// VERSION: v3.1.2 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.2.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const { getDatabase } = require('../config/database');
 
 class Velonews {
@@ -17,7 +17,9 @@ class Velonews {
     try {
       const collection = this.getCollection();
       const velonews = {
-        ...velonewsData,
+        titulo: velonewsData.titulo,
+        conteudo: velonewsData.conteudo,
+        isCritical: velonewsData.isCritical || false,
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -91,7 +93,9 @@ class Velonews {
       const { ObjectId } = require('mongodb');
       
       const updateDoc = {
-        ...updateData,
+        titulo: updateData.titulo,
+        conteudo: updateData.conteudo,
+        isCritical: updateData.isCritical,
         updatedAt: new Date()
       };
 

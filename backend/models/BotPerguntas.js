@@ -1,4 +1,4 @@
-// VERSION: v3.2.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.3.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const { getDatabase } = require('../config/database');
 
 class BotPerguntas {
@@ -17,11 +17,11 @@ class BotPerguntas {
     try {
       const collection = this.getCollection();
       const pergunta = {
-        Pergunta: perguntaData.Pergunta,
-        Resposta: perguntaData.Resposta,
-        "Palavras-chave": perguntaData["Palavras-chave"],
-        Sinonimos: perguntaData.Sinonimos || '',
-        Tabulação: perguntaData.Tabulação || '',
+        pergunta: perguntaData.pergunta,
+        resposta: perguntaData.resposta,
+        palavrasChave: perguntaData.palavrasChave,
+        sinonimos: perguntaData.sinonimos || '',
+        tabulacao: perguntaData.tabulacao || '',
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -181,7 +181,7 @@ class BotPerguntas {
   async getByPergunta(pergunta) {
     try {
       const collection = this.getCollection();
-      const perguntas = await collection.find({ Pergunta: { $regex: pergunta, $options: 'i' } }).sort({ createdAt: -1 }).toArray();
+      const perguntas = await collection.find({ pergunta: { $regex: pergunta, $options: 'i' } }).sort({ createdAt: -1 }).toArray();
       
       return {
         success: true,

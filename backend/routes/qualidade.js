@@ -1,4 +1,4 @@
-// VERSION: v3.4.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.5.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const QualidadeFuncionario = require('../models/QualidadeFuncionario');
@@ -26,12 +26,12 @@ router.use(logResponse);
 
 // Validação de dados obrigatórios para funcionários
 const validateFuncionario = (req, res, next) => {
-  const { nomeCompleto, empresa, dataContratado } = req.body;
+  const { colaboradorNome, empresa, dataContratado } = req.body;
   
-  if (!nomeCompleto || nomeCompleto.trim() === '') {
+  if (!colaboradorNome || colaboradorNome.trim() === '') {
     return res.status(400).json({
       success: false,
-      message: 'Nome completo é obrigatório'
+      message: 'Nome do colaborador é obrigatório'
     });
   }
   
@@ -114,9 +114,9 @@ const validateAvaliacao = (req, res, next) => {
 
 // Validação de dados obrigatórios para avaliações GPT
 const validateAvaliacaoGPT = (req, res, next) => {
-  const { avaliacaoId, analiseGPT, pontuacaoGPT, criteriosGPT, confianca } = req.body;
+  const { avaliacao_id, analiseGPT, pontuacaoGPT, criteriosGPT, confianca } = req.body;
   
-  if (!avaliacaoId || avaliacaoId.trim() === '') {
+  if (!avaliacao_id || avaliacao_id.toString().trim() === '') {
     return res.status(400).json({
       success: false,
       message: 'ID da avaliação é obrigatório'
@@ -270,7 +270,7 @@ router.post('/funcionarios', validateFuncionario, async (req, res) => {
     const funcionarioSalvo = await novoFuncionario.save();
     
     global.emitTraffic('Qualidade Funcionários', 'completed', 'Concluído - Funcionário criado com sucesso');
-    global.emitLog('success', `POST /api/qualidade/funcionarios - Funcionário "${funcionarioSalvo.nomeCompleto}" criado com sucesso`);
+    global.emitLog('success', `POST /api/qualidade/funcionarios - Funcionário "${funcionarioSalvo.colaboradorNome}" criado com sucesso`);
     global.emitJson(funcionarioSalvo);
     
     res.status(201).json({
@@ -537,11 +537,11 @@ router.get('/avaliacoes-gpt', async (req, res) => {
   try {
     console.log(`[QUALIDADE-AVALIACOES-GPT] ${new Date().toISOString()} - GET /avaliacoes-gpt - PROCESSING`);
     
-    const { avaliacaoId } = req.query;
+    const { avaliacao_id } = req.query;
     let query = {};
     
-    if (avaliacaoId) {
-      query.avaliacaoId = avaliacaoId;
+    if (avaliacao_id) {
+      query.avaliacao_id = avaliacao_id;
     }
     
     const avaliacoesGPT = await QualidadeAvaliacaoGPT.find(query)
@@ -589,13 +589,13 @@ router.get('/avaliacoes-gpt/:id', async (req, res) => {
   }
 });
 
-// GET /api/qualidade/avaliacoes-gpt/avaliacao/:avaliacaoId - Obter avaliação GPT por ID da avaliação original
-router.get('/avaliacoes-gpt/avaliacao/:avaliacaoId', async (req, res) => {
+// GET /api/qualidade/avaliacoes-gpt/avaliacao/:avaliacao_id - Obter avaliação GPT por ID da avaliação original
+router.get('/avaliacoes-gpt/avaliacao/:avaliacao_id', async (req, res) => {
   try {
-    const { avaliacaoId } = req.params;
-    console.log(`[QUALIDADE-AVALIACOES-GPT] ${new Date().toISOString()} - GET /avaliacoes-gpt/avaliacao/${avaliacaoId} - PROCESSING`);
+    const { avaliacao_id } = req.params;
+    console.log(`[QUALIDADE-AVALIACOES-GPT] ${new Date().toISOString()} - GET /avaliacoes-gpt/avaliacao/${avaliacao_id} - PROCESSING`);
     
-    const avaliacaoGPT = await QualidadeAvaliacaoGPT.findOne({ avaliacaoId });
+    const avaliacaoGPT = await QualidadeAvaliacaoGPT.findOne({ avaliacao_id });
     
     if (!avaliacaoGPT) {
       return res.status(404).json({
@@ -609,7 +609,7 @@ router.get('/avaliacoes-gpt/avaliacao/:avaliacaoId', async (req, res) => {
       data: avaliacaoGPT
     });
   } catch (error) {
-    console.error('[QUALIDADE-AVALIACOES-GPT] Erro ao buscar avaliação GPT por avaliacaoId:', error);
+    console.error('[QUALIDADE-AVALIACOES-GPT] Erro ao buscar avaliação GPT por avaliacao_id:', error);
     res.status(500).json({
       success: false,
       message: 'Erro interno do servidor ao buscar avaliação GPT'
@@ -626,9 +626,9 @@ router.post('/avaliacoes-gpt', validateAvaliacaoGPT, async (req, res) => {
     
     const avaliacaoGPTData = { ...req.body };
     
-    // Verificar se já existe uma avaliação GPT para este avaliacaoId
+    // Verificar se já existe uma avaliação GPT para este avaliacao_id
     const avaliacaoExistente = await QualidadeAvaliacaoGPT.findOne({ 
-      avaliacaoId: avaliacaoGPTData.avaliacaoId 
+      avaliacao_id: avaliacaoGPTData.avaliacao_id 
     });
     
     if (avaliacaoExistente) {
@@ -645,7 +645,7 @@ router.post('/avaliacoes-gpt', validateAvaliacaoGPT, async (req, res) => {
     const avaliacaoGPTSalva = await novaAvaliacaoGPT.save();
     
     global.emitTraffic('Qualidade Avaliações GPT', 'completed', 'Concluído - Avaliação GPT criada com sucesso');
-    global.emitLog('success', `POST /api/qualidade/avaliacoes-gpt - Avaliação GPT para ID "${avaliacaoGPTSalva.avaliacaoId}" criada com sucesso`);
+    global.emitLog('success', `POST /api/qualidade/avaliacoes-gpt - Avaliação GPT para ID "${avaliacaoGPTSalva.avaliacao_id}" criada com sucesso`);
     global.emitJson(avaliacaoGPTSalva);
     
     res.status(201).json({
@@ -680,18 +680,18 @@ router.put('/avaliacoes-gpt/:id', validateAvaliacaoGPT, async (req, res) => {
       });
     }
     
-    // Verificar se o avaliacaoId está sendo alterado e se já existe outro registro com esse ID
+    // Verificar se o avaliacao_id está sendo alterado e se já existe outro registro com esse ID
     const updateData = { ...req.body };
-    if (updateData.avaliacaoId && updateData.avaliacaoId !== avaliacaoGPTExistente.avaliacaoId) {
+    if (updateData.avaliacao_id && updateData.avaliacao_id.toString() !== avaliacaoGPTExistente.avaliacao_id.toString()) {
       const avaliacaoComMesmoId = await QualidadeAvaliacaoGPT.findOne({ 
-        avaliacaoId: updateData.avaliacaoId,
+        avaliacao_id: updateData.avaliacao_id,
         _id: { $ne: id }
       });
       
       if (avaliacaoComMesmoId) {
         return res.status(409).json({
           success: false,
-          message: 'Já existe uma avaliação GPT para este avaliacaoId'
+          message: 'Já existe uma avaliação GPT para este avaliacao_id'
         });
       }
     }

@@ -43,10 +43,10 @@ const criteriosGPTSchema = new mongoose.Schema({
 
 // Schema principal para qualidade_avaliacoes_gpt
 const qualidadeAvaliacaoGPTSchema = new mongoose.Schema({
-  avaliacaoId: {
-    type: String,
+  avaliacao_id: {
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
-    trim: true
+    ref: 'QualidadeAvaliacao'
   },
   analiseGPT: {
     type: String,
@@ -80,15 +80,31 @@ const qualidadeAvaliacaoGPTSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
   }
 });
 
+// Middleware para atualizar updatedAt antes de salvar
+qualidadeAvaliacaoGPTSchema.pre('save', function(next) {
+  this.updatedAt = new Date();
+  next();
+});
+
+// Middleware para atualizar updatedAt antes de atualizar
+qualidadeAvaliacaoGPTSchema.pre('findOneAndUpdate', function(next) {
+  this.set({ updatedAt: new Date() });
+  next();
+});
+
 // Índices para otimização de consultas
-qualidadeAvaliacaoGPTSchema.index({ avaliacaoId: 1 });
+qualidadeAvaliacaoGPTSchema.index({ avaliacao_id: 1 });
 qualidadeAvaliacaoGPTSchema.index({ pontuacaoGPT: 1 });
 qualidadeAvaliacaoGPTSchema.index({ confianca: 1 });
 qualidadeAvaliacaoGPTSchema.index({ createdAt: -1 });
 
 module.exports = analisesConnection.model('QualidadeAvaliacaoGPT', qualidadeAvaliacaoGPTSchema, 'qualidade_avaliacoes_gpt');
 
-// VERSION: v1.0.0 | DATE: 2024-12-19 | AUTHOR: Lucas Gravina - VeloHub Development Team
+// VERSION: v1.1.0 | DATE: 2024-12-19 | AUTHOR: Lucas Gravina - VeloHub Development Team
