@@ -1,4 +1,4 @@
-// VERSION: v1.2.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v1.3.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const Users = require('../models/Users');
@@ -34,7 +34,7 @@ router.get('/', async (req, res) => {
 // POST /api/users - Criar novo usuário
 router.post('/', async (req, res) => {
   try {
-    const { _userMail, _userId, _userRole, _userClearance, _userTickets } = req.body;
+    const { _userMail, _userId, _userRole, _userClearance, _userTickets, _funcoesAdministrativas } = req.body;
     
     // Validações básicas
     if (!_userMail || !_userId || !_userRole) {
@@ -81,6 +81,9 @@ router.post('/', async (req, res) => {
         gestao: false,
         rhFin: false,
         facilities: false
+      },
+      _funcoesAdministrativas: _funcoesAdministrativas || {
+        avaliador: false
       }
     });
     
@@ -196,7 +199,7 @@ router.get('/check/:email', async (req, res) => {
   try {
     const { email } = req.params;
     
-    const user = await Users.findOne({ _userMail: email }).select('_userMail _userRole _userClearance');
+    const user = await Users.findOne({ _userMail: email }).select('_userMail _userRole _userClearance _funcoesAdministrativas');
     
     if (!user) {
       return res.json({
@@ -216,7 +219,8 @@ router.get('/check/:email', async (req, res) => {
       data: {
         email: user._userMail,
         role: user._userRole,
-        clearance: user._userClearance
+        clearance: user._userClearance,
+        funcoesAdministrativas: user._funcoesAdministrativas
       }
     });
   } catch (error) {

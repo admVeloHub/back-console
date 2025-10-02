@@ -1,4 +1,4 @@
-// VERSION: v1.3.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v1.4.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const mongoose = require('mongoose');
 
 // Configurar conexão específica para o database console_config
@@ -78,6 +78,15 @@ const userSchema = new mongoose.Schema({
       gestao: false,
       rhFin: false,
       facilities: false
+    }
+  },
+  _funcoesAdministrativas: {
+    type: {
+      avaliador: { type: Boolean, default: false }
+    },
+    required: false,
+    default: {
+      avaliador: false
     }
   }
 }, {

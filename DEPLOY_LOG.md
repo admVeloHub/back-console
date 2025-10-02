@@ -362,4 +362,63 @@ Remoção do campo colaboradorId redundante e alinhamento completo dos schemas:
 
 ---
 
+## GitHub Push - 2024-12-19
+
+**Data/Hora:** 2024-12-19 23:59:00  
+**Tipo:** GitHub Push  
+**Versão:** v3.8.0  
+**Repositório:** admVeloHub/back-console  
+**Branch:** master  
+
+### Arquivos Modificados:
+- `backend/models/Users.js` (v1.4.0)
+- `backend/routes/users.js` (v1.3.0)
+- `listagem de schema de coleções do mongoD.rb`
+- `DEPLOY_LOG.md`
+
+### Descrição:
+Implementação do campo _funcoesAdministrativas no schema de usuários para suporte ao módulo Qualidade:
+
+**Funcionalidades Implementadas:**
+- Adicionado campo `_funcoesAdministrativas` ao schema de usuários
+- Campo opcional com default `{ avaliador: false }`
+- Suporte completo nos endpoints GET, POST e PUT
+- Mapeamento correto entre frontend e backend
+- Documentação atualizada no schema MongoDB
+
+**Alterações Técnicas:**
+- Schema Users.js atualizado com novo campo
+- Endpoint POST /api/users aceita _funcoesAdministrativas
+- Endpoint PUT /api/users/:email aceita e salva _funcoesAdministrativas
+- Endpoint GET /api/users retorna _funcoesAdministrativas
+- Endpoint GET /api/users/check/:email inclui _funcoesAdministrativas
+- Documentação do schema atualizada
+
+**Schema Final Atualizado:**
+```json
+{
+  "_id": "ObjectId",
+  "_userMail": "String (obrigatório)",
+  "_userId": "String (obrigatório)",
+  "_userRole": "String (obrigatório)",
+  "_userClearance": "Object (obrigatório)",
+  "_userTickets": "Object (obrigatório)",
+  "_funcoesAdministrativas": {
+    "avaliador": "Boolean (opcional, default: false)"
+  }
+}
+```
+
+**Benefícios:**
+- ✅ Suporte completo ao módulo Qualidade
+- ✅ Usuários com função "Gestão" ou "Administrador" podem ser marcados como avaliadores
+- ✅ Campo opcional com valor padrão seguro
+- ✅ Compatibilidade total com frontend existente
+- ✅ API mantém retrocompatibilidade
+
+**Commit Hash:** [Pendente]  
+**Status:** ✅ Pronto para Deploy
+
+---
+
 *Log gerado automaticamente pelo sistema de deploy*
