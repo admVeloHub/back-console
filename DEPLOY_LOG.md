@@ -416,8 +416,8 @@ Implementação do campo _funcoesAdministrativas no schema de usuários para sup
 - ✅ Compatibilidade total com frontend existente
 - ✅ API mantém retrocompatibilidade
 
-**Commit Hash:** [Pendente]  
-**Status:** ✅ Pronto para Deploy
+**Commit Hash:** c3e4b4e  
+**Status:** ✅ Sucesso
 
 ---
 
