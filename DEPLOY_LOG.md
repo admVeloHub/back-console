@@ -2,6 +2,57 @@
 
 ## GitHub Push - 2024-12-19
 
+**Data/Hora:** 2024-12-19 23:59:00  
+**Tipo:** GitHub Push  
+**Versão:** v3.10.0  
+**Repositório:** admVeloHub/back-console  
+**Branch:** master  
+
+### Arquivos Modificados:
+- `backend/routes/qualidade.js` (v3.6.0)
+- `backend/scripts/migrations/` - **NOVO** (8 arquivos de migração)
+- `DEPLOY_LOG.md`
+
+### Descrição:
+Correção crítica do erro 400 no endpoint POST /api/qualidade/avaliacoes:
+
+**Problema Resolvido:**
+- Endpoint retornava erro 400 devido à validação restritiva do campo `ano`
+- Validação exigia que `ano` fosse exatamente do tipo `number`
+- Frontend enviava dados válidos mas validação falhava
+
+**Correções Implementadas:**
+- Validação flexível do campo `ano` (aceita number e string)
+- Conversão automática de string para number usando `parseInt()`
+- Aplicada em validação inicial, endpoint POST e PUT
+- Melhoria na robustez da API de qualidade
+
+**Funcionalidades Validadas:**
+- ✅ Aceita `ano` como number (2025)
+- ✅ Aceita `ano` como string ("2025") com conversão automática
+- ✅ Validação de números inválidos mantida
+- ✅ Compatibilidade total com dados do frontend
+- ✅ Endpoints POST e PUT funcionando corretamente
+
+**Teste Realizado:**
+```json
+{
+  "colaboradorNome": "Gravina_dev",
+  "avaliador": "Lucas Gravina", 
+  "mes": "Julho",
+  "ano": 2025,
+  "dataAvaliacao": "2025-10-02T19:56:00.600Z",
+  "pontuacaoTotal": 75
+}
+```
+
+**Commit Hash:** e112ef4  
+**Status:** ✅ Sucesso
+
+---
+
+## GitHub Push - 2024-12-19
+
 **Data/Hora:** 2024-12-19 15:30:00  
 **Tipo:** GitHub Push  
 **Versão:** v3.3.0  
