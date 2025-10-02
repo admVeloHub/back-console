@@ -11,11 +11,6 @@ const analisesConnection = mongoose.createConnection(MONGODB_URI, {
 
 // Schema principal para qualidade_avaliacoes
 const qualidadeAvaliacaoSchema = new mongoose.Schema({
-  colaboradorId: {
-    type: String,
-    required: true,
-    trim: true
-  },
   colaboradorNome: {
     type: String,
     required: true,
@@ -113,7 +108,6 @@ qualidadeAvaliacaoSchema.pre('findOneAndUpdate', function(next) {
 });
 
 // Índices para otimização de consultas
-qualidadeAvaliacaoSchema.index({ colaboradorId: 1 });
 qualidadeAvaliacaoSchema.index({ colaboradorNome: 1 });
 qualidadeAvaliacaoSchema.index({ avaliador: 1 });
 qualidadeAvaliacaoSchema.index({ mes: 1, ano: 1 });
@@ -122,4 +116,4 @@ qualidadeAvaliacaoSchema.index({ createdAt: -1 });
 
 module.exports = analisesConnection.model('QualidadeAvaliacao', qualidadeAvaliacaoSchema, 'qualidade_avaliacoes');
 
-// VERSION: v1.0.0 | DATE: 2024-12-19 | AUTHOR: Lucas Gravina - VeloHub Development Team
+// VERSION: v1.1.0 | DATE: 2024-12-19 | AUTHOR: Lucas Gravina - VeloHub Development Team

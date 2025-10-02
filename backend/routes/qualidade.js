@@ -1,3 +1,4 @@
+// VERSION: v3.4.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const QualidadeFuncionario = require('../models/QualidadeFuncionario');
@@ -62,14 +63,7 @@ const validateFuncionario = (req, res, next) => {
 
 // Validação de dados obrigatórios para avaliações
 const validateAvaliacao = (req, res, next) => {
-  const { colaboradorId, colaboradorNome, avaliador, mes, ano, dataAvaliacao } = req.body;
-  
-  if (!colaboradorId || colaboradorId.trim() === '') {
-    return res.status(400).json({
-      success: false,
-      message: 'ID do colaborador é obrigatório'
-    });
-  }
+  const { colaboradorNome, avaliador, mes, ano, dataAvaliacao } = req.body;
   
   if (!colaboradorNome || colaboradorNome.trim() === '') {
     return res.status(400).json({
@@ -251,8 +245,9 @@ router.get('/funcionarios/:id', async (req, res) => {
 // POST /api/qualidade/funcionarios - Criar novo funcionário
 router.post('/funcionarios', validateFuncionario, async (req, res) => {
   try {
-    console.log(`[QUALIDADE-FUNCIONARIOS] ${new Date().toISOString()} - POST /funcionarios - PROCESSING`);
-    console.log(`[QUALIDADE-FUNCIONARIOS] Request body:`, JSON.stringify(req.body, null, 2));
+    global.emitTraffic('Qualidade Funcionários', 'received', 'Entrada recebida - POST /api/qualidade/funcionarios');
+    global.emitLog('info', 'POST /api/qualidade/funcionarios - Criando novo funcionário');
+    global.emitJson(req.body);
     
     const funcionarioData = { ...req.body };
     
@@ -270,8 +265,13 @@ router.post('/funcionarios', validateFuncionario, async (req, res) => {
       funcionarioData.dataAfastamento = new Date(funcionarioData.dataAfastamento);
     }
     
+    global.emitTraffic('Qualidade Funcionários', 'processing', 'Transmitindo para DB');
     const novoFuncionario = new QualidadeFuncionario(funcionarioData);
     const funcionarioSalvo = await novoFuncionario.save();
+    
+    global.emitTraffic('Qualidade Funcionários', 'completed', 'Concluído - Funcionário criado com sucesso');
+    global.emitLog('success', `POST /api/qualidade/funcionarios - Funcionário "${funcionarioSalvo.nomeCompleto}" criado com sucesso`);
+    global.emitJson(funcionarioSalvo);
     
     res.status(201).json({
       success: true,
@@ -279,6 +279,8 @@ router.post('/funcionarios', validateFuncionario, async (req, res) => {
       message: 'Funcionário criado com sucesso'
     });
   } catch (error) {
+    global.emitTraffic('Qualidade Funcionários', 'error', 'Erro ao criar funcionário');
+    global.emitLog('error', `POST /api/qualidade/funcionarios - Erro: ${error.message}`);
     console.error('[QUALIDADE-FUNCIONARIOS] Erro ao criar funcionário:', error);
     res.status(500).json({
       success: false,
@@ -422,8 +424,9 @@ router.get('/avaliacoes/:id', async (req, res) => {
 // POST /api/qualidade/avaliacoes - Criar nova avaliação
 router.post('/avaliacoes', validateAvaliacao, async (req, res) => {
   try {
-    console.log(`[QUALIDADE-AVALIACOES] ${new Date().toISOString()} - POST /avaliacoes - PROCESSING`);
-    console.log(`[QUALIDADE-AVALIACOES] Request body:`, JSON.stringify(req.body, null, 2));
+    global.emitTraffic('Qualidade Avaliações', 'received', 'Entrada recebida - POST /api/qualidade/avaliacoes');
+    global.emitLog('info', 'POST /api/qualidade/avaliacoes - Criando nova avaliação');
+    global.emitJson(req.body);
     
     const avaliacaoData = { ...req.body };
     
@@ -432,8 +435,13 @@ router.post('/avaliacoes', validateAvaliacao, async (req, res) => {
       avaliacaoData.dataAvaliacao = new Date(avaliacaoData.dataAvaliacao);
     }
     
+    global.emitTraffic('Qualidade Avaliações', 'processing', 'Transmitindo para DB');
     const novaAvaliacao = new QualidadeAvaliacao(avaliacaoData);
     const avaliacaoSalva = await novaAvaliacao.save();
+    
+    global.emitTraffic('Qualidade Avaliações', 'completed', 'Concluído - Avaliação criada com sucesso');
+    global.emitLog('success', `POST /api/qualidade/avaliacoes - Avaliação do colaborador "${avaliacaoSalva.colaboradorNome}" criada com sucesso`);
+    global.emitJson(avaliacaoSalva);
     
     res.status(201).json({
       success: true,
@@ -441,6 +449,8 @@ router.post('/avaliacoes', validateAvaliacao, async (req, res) => {
       message: 'Avaliação criada com sucesso'
     });
   } catch (error) {
+    global.emitTraffic('Qualidade Avaliações', 'error', 'Erro ao criar avaliação');
+    global.emitLog('error', `POST /api/qualidade/avaliacoes - Erro: ${error.message}`);
     console.error('[QUALIDADE-AVALIACOES] Erro ao criar avaliação:', error);
     res.status(500).json({
       success: false,
@@ -610,8 +620,9 @@ router.get('/avaliacoes-gpt/avaliacao/:avaliacaoId', async (req, res) => {
 // POST /api/qualidade/avaliacoes-gpt - Criar nova avaliação GPT
 router.post('/avaliacoes-gpt', validateAvaliacaoGPT, async (req, res) => {
   try {
-    console.log(`[QUALIDADE-AVALIACOES-GPT] ${new Date().toISOString()} - POST /avaliacoes-gpt - PROCESSING`);
-    console.log(`[QUALIDADE-AVALIACOES-GPT] Request body:`, JSON.stringify(req.body, null, 2));
+    global.emitTraffic('Qualidade Avaliações GPT', 'received', 'Entrada recebida - POST /api/qualidade/avaliacoes-gpt');
+    global.emitLog('info', 'POST /api/qualidade/avaliacoes-gpt - Criando nova avaliação GPT');
+    global.emitJson(req.body);
     
     const avaliacaoGPTData = { ...req.body };
     
@@ -621,14 +632,21 @@ router.post('/avaliacoes-gpt', validateAvaliacaoGPT, async (req, res) => {
     });
     
     if (avaliacaoExistente) {
+      global.emitTraffic('Qualidade Avaliações GPT', 'error', 'Avaliação GPT já existe para esta avaliação');
+      global.emitLog('error', 'POST /api/qualidade/avaliacoes-gpt - Avaliação GPT já existe');
       return res.status(409).json({
         success: false,
         message: 'Já existe uma avaliação GPT para esta avaliação'
       });
     }
     
+    global.emitTraffic('Qualidade Avaliações GPT', 'processing', 'Transmitindo para DB');
     const novaAvaliacaoGPT = new QualidadeAvaliacaoGPT(avaliacaoGPTData);
     const avaliacaoGPTSalva = await novaAvaliacaoGPT.save();
+    
+    global.emitTraffic('Qualidade Avaliações GPT', 'completed', 'Concluído - Avaliação GPT criada com sucesso');
+    global.emitLog('success', `POST /api/qualidade/avaliacoes-gpt - Avaliação GPT para ID "${avaliacaoGPTSalva.avaliacaoId}" criada com sucesso`);
+    global.emitJson(avaliacaoGPTSalva);
     
     res.status(201).json({
       success: true,
@@ -636,6 +654,8 @@ router.post('/avaliacoes-gpt', validateAvaliacaoGPT, async (req, res) => {
       message: 'Avaliação GPT criada com sucesso'
     });
   } catch (error) {
+    global.emitTraffic('Qualidade Avaliações GPT', 'error', 'Erro ao criar avaliação GPT');
+    global.emitLog('error', `POST /api/qualidade/avaliacoes-gpt - Erro: ${error.message}`);
     console.error('[QUALIDADE-AVALIACOES-GPT] Erro ao criar avaliação GPT:', error);
     res.status(500).json({
       success: false,
