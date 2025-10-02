@@ -295,4 +295,71 @@ Adequação completa do endpoint POST /api/bot-perguntas para schema MongoDB pad
 
 ---
 
+## GitHub Push - 2024-12-19
+
+**Data/Hora:** 2024-12-19 23:55:00  
+**Tipo:** GitHub Push  
+**Versão:** v3.7.0  
+**Repositório:** admVeloHub/back-console  
+**Branch:** master  
+
+### Arquivos Modificados:
+- `backend/models/QualidadeAvaliacao.js` (v1.1.0)
+- `backend/routes/qualidade.js` (v3.4.0)
+- `env.example` (v3.4.0)
+- `listagem de schema de coleções do mongoD.rb`
+- `DEPLOY_LOG.md`
+
+### Descrição:
+Remoção do campo colaboradorId redundante e alinhamento completo dos schemas:
+
+**Problema Resolvido:**
+- Campo `colaboradorId` era redundante e desnecessário
+- Schema não estava alinhado com especificação oficial
+
+**Alterações Implementadas:**
+- Removido campo `colaboradorId` do schema `qualidade_avaliacoes`
+- Atualizado modelo QualidadeAvaliacao.js para usar apenas `colaboradorNome`
+- Corrigida validação `validateAvaliacao` removendo `colaboradorId`
+- Atualizado schema no arquivo de listagem de coleções MongoDB
+- Adicionada variável `CONSOLE_ANALISES_DB` no env.example
+- Schema agora 100% alinhado com especificação oficial
+
+**Schema Final Atualizado:**
+```json
+{
+  "_id": "ObjectId",
+  "colaboradorNome": "String (obrigatório)",
+  "avaliador": "String (obrigatório)",
+  "mes": "String (obrigatório)",
+  "ano": "Number (obrigatório)",
+  "dataAvaliacao": "Date (obrigatório)",
+  "arquivoLigacao": "String (opcional)",
+  "nomeArquivo": "String (opcional)",
+  "saudacaoAdequada": "Boolean (opcional)",
+  "escutaAtiva": "Boolean (opcional)",
+  "resolucaoQuestao": "Boolean (opcional)",
+  "empatiaCordialidade": "Boolean (opcional)",
+  "direcionouPesquisa": "Boolean (opcional)",
+  "procedimentoIncorreto": "Boolean (opcional)",
+  "encerramentoBrusco": "Boolean (opcional)",
+  "moderado": "Boolean (opcional)",
+  "observacoesModeracao": "String (opcional)",
+  "pontuacaoTotal": "Number (opcional)",
+  "createdAt": "Date (automático)",
+  "updatedAt": "Date (automático)"
+}
+```
+
+**Benefícios:**
+- ✅ Schema mais limpo e focado
+- ✅ Remoção de redundância desnecessária
+- ✅ Alinhamento 100% com especificação oficial
+- ✅ API mais simples e direta
+
+**Commit Hash:** 0ffbb0b  
+**Status:** ✅ Sucesso
+
+---
+
 *Log gerado automaticamente pelo sistema de deploy*
