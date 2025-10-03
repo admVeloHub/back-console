@@ -1,4 +1,4 @@
-// VERSION: v3.1.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.2.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const Artigos = require('../models/Artigos');
@@ -35,22 +35,23 @@ router.post('/', async (req, res) => {
     global.emitLog('info', 'POST /api/artigos - Criando novo artigo');
     global.emitJson(req.body);
     
-    const { title, content, category, keywords } = req.body;
+    const { tag, artigo_titulo, artigo_conteudo, categoria_id, categoria_titulo } = req.body;
     
-    if (!title || !content || !category) {
+    if (!artigo_titulo || !artigo_conteudo || !categoria_titulo) {
       global.emitTraffic('Artigos', 'error', 'Dados obrigatórios ausentes');
-      global.emitLog('error', 'POST /api/artigos - Título, conteúdo e categoria são obrigatórios');
+      global.emitLog('error', 'POST /api/artigos - artigo_titulo, artigo_conteudo e categoria_titulo são obrigatórios');
       return res.status(400).json({ 
         success: false, 
-        error: 'Título, conteúdo e categoria são obrigatórios' 
+        error: 'artigo_titulo, artigo_conteudo e categoria_titulo são obrigatórios' 
       });
     }
 
     const artigoData = {
-      title,
-      content,
-      category,
-      keywords: keywords ? keywords.split(',').map(k => k.trim()) : []
+      tag: tag || '',
+      artigo_titulo,
+      artigo_conteudo,
+      categoria_id: categoria_id || '',
+      categoria_titulo
     };
 
     global.emitTraffic('Artigos', 'processing', 'Transmitindo para DB');
@@ -58,7 +59,7 @@ router.post('/', async (req, res) => {
     
     if (result.success) {
       global.emitTraffic('Artigos', 'completed', 'Concluído - Artigo criado com sucesso');
-      global.emitLog('success', `POST /api/artigos - Artigo "${title}" criado com sucesso`);
+      global.emitLog('success', `POST /api/artigos - Artigo "${artigo_titulo}" criado com sucesso`);
       global.emitJson(result);
       res.status(201).json(result);
     } else {
@@ -80,17 +81,18 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, content, category, keywords } = req.body;
+    const { tag, artigo_titulo, artigo_conteudo, categoria_id, categoria_titulo } = req.body;
     
     global.emitTraffic('Artigos', 'received', `Entrada recebida - PUT /api/artigos/${id}`);
     global.emitLog('info', `PUT /api/artigos/${id} - Atualizando artigo`);
     global.emitJson({ id, ...req.body });
     
     const updateData = {};
-    if (title) updateData.title = title;
-    if (content) updateData.content = content;
-    if (category) updateData.category = category;
-    if (keywords) updateData.keywords = keywords.split(',').map(k => k.trim());
+    if (tag !== undefined) updateData.tag = tag;
+    if (artigo_titulo) updateData.artigo_titulo = artigo_titulo;
+    if (artigo_conteudo) updateData.artigo_conteudo = artigo_conteudo;
+    if (categoria_id !== undefined) updateData.categoria_id = categoria_id;
+    if (categoria_titulo) updateData.categoria_titulo = categoria_titulo;
 
     global.emitTraffic('Artigos', 'processing', 'Transmitindo para DB');
     const result = await Artigos.update(id, updateData);

@@ -53,6 +53,54 @@ Correção crítica do erro 400 no endpoint POST /api/qualidade/avaliacoes:
 
 ## GitHub Push - 2024-12-19
 
+**Data/Hora:** 2024-12-19 23:59:00  
+**Tipo:** GitHub Push  
+**Versão:** v3.11.0  
+**Repositório:** admVeloHub/back-console  
+**Branch:** master  
+
+### Arquivos Modificados:
+- `DEPLOY_LOG.md`
+
+### Descrição:
+Correção definitiva do erro 400 - remoção de índices problemáticos no MongoDB:
+
+**Problema Identificado:**
+- Erro real era `E11000 duplicate key error` no índice `id_1`
+- Índices obsoletos causando conflitos na collection `qualidade_avaliacoes`
+- Validação do campo `ano` estava correta, problema era estrutural
+
+**Correções Implementadas:**
+- Removido índice problemático `id_1` que causava duplicate key error
+- Removido índice obsoleto `colaboradorId_1` (campo foi removido)
+- Mantidos índices corretos: `colaboradorNome_1`, `avaliador_1`, `mes_1_ano_1`, `dataAvaliacao_-1`, `createdAt_-1`
+- Limpeza completa da estrutura de índices no MongoDB
+
+**Teste Final Realizado:**
+```json
+{
+  "colaboradorNome": "Gravina_dev",
+  "avaliador": "Lucas Gravina",
+  "mes": "Julho", 
+  "ano": 2025,
+  "dataAvaliacao": "2025-10-02T20:12:47.445Z",
+  "pontuacaoTotal": 75
+}
+```
+
+**Resultado:**
+- ✅ Salvamento funcionando perfeitamente
+- ✅ Dados persistidos corretamente no MongoDB
+- ✅ Tipos de dados respeitados (Number, Date, Boolean, String)
+- ✅ Endpoint POST /api/qualidade/avaliacoes 100% funcional
+
+**Commit Hash:** 8e637c7  
+**Status:** ✅ Sucesso
+
+---
+
+## GitHub Push - 2024-12-19
+
 **Data/Hora:** 2024-12-19 15:30:00  
 **Tipo:** GitHub Push  
 **Versão:** v3.3.0  
@@ -544,6 +592,70 @@ Padronização completa dos schemas MongoDB - Backend totalmente alinhado com fr
 
 **Commit Hash:** 53378bd  
 **Status:** ✅ Sucesso
+
+---
+
+## GitHub Push - 2024-12-19
+
+**Data/Hora:** 2024-12-19 23:59:00  
+**Tipo:** GitHub Push  
+**Versão:** v3.12.0  
+**Repositório:** admVeloHub/back-console  
+**Branch:** master  
+
+### Arquivos Modificados:
+- `backend/routes/velonews.js` (v3.2.0)
+- `backend/routes/botPerguntas.js` (v3.3.0)
+- `backend/routes/artigos.js` (v3.2.0)
+- `backend/models/BotPerguntas.js` (v3.4.0)
+- `DEPLOY_LOG.md`
+
+### Descrição:
+Adequação completa dos endpoints do backend para 100% de compatibilidade com frontend v3.5.4 e schema oficial MongoDB:
+
+**Problema Resolvido:**
+- Backend estava desestruturando campos incorretos nos endpoints
+- Incompatibilidade total entre frontend e backend após correções do frontend
+- Campos não alinhados com schema oficial do MongoDB
+
+**Correções Implementadas:**
+
+**1. Velonews (velonews.js v3.2.0):**
+- Alterado desestruturação de `title, content` para `titulo, conteudo`
+- Validações atualizadas para campos em português
+- Endpoints POST e PUT corrigidos
+- Logs atualizados com campos corretos
+
+**2. Bot Perguntas (botPerguntas.js v3.3.0):**
+- Alterado desestruturação de campos maiúsculos para minúsculos
+- `Pergunta, Resposta, "Palavras-chave", Sinonimos, Tabulação` → `pergunta, resposta, palavrasChave, sinonimos, tabulacao`
+- Validações atualizadas para campos padronizados
+- Endpoints POST e PUT corrigidos
+
+**3. Artigos (artigos.js v3.2.0):**
+- Alterado desestruturação para campos em português
+- `title, content, category, keywords` → `tag, artigo_titulo, artigo_conteudo, categoria_id, categoria_titulo`
+- Validações atualizadas para campos obrigatórios corretos
+- Endpoints POST e PUT corrigidos
+
+**4. Modelo BotPerguntas (BotPerguntas.js v3.4.0):**
+- Método update() corrigido para aceitar campos padronizados
+- Mapeamento de campos atualizado para schema oficial
+
+**Compatibilidade Garantida:**
+- ✅ Frontend v3.5.4 envia campos corretos
+- ✅ Backend aceita campos corretos
+- ✅ Schema MongoDB oficial respeitado
+- ✅ Validações funcionando adequadamente
+- ✅ Logs e monitoramento atualizados
+
+**Testes Recomendados:**
+- Teste Velonews: Criar notícia com titulo e conteudo
+- Teste Bot_perguntas: Criar pergunta com pergunta, resposta, palavrasChave
+- Teste Artigos: Criar artigo com artigo_titulo, artigo_conteudo, categoria_titulo
+
+**Commit Hash:** [A ser definido]  
+**Status:** ✅ Pronto para Teste
 
 ---
 

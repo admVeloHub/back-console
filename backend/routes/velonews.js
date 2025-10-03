@@ -1,4 +1,4 @@
-// VERSION: v3.1.1 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.2.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const Velonews = require('../models/Velonews');
@@ -35,10 +35,10 @@ router.post('/', async (req, res) => {
     global.emitLog('info', 'POST /api/velonews - Criando nova velonews');
     global.emitJson(req.body);
     
-    const { title, content, isCritical } = req.body;
+    const { titulo, conteudo, isCritical } = req.body;
     
     // Validação mais flexível
-    if (!title || title.trim().length === 0) {
+    if (!titulo || titulo.trim().length === 0) {
       global.emitTraffic('Velonews', 'error', 'Título é obrigatório');
       global.emitLog('error', 'POST /api/velonews - Título é obrigatório');
       return res.status(400).json({ 
@@ -47,7 +47,7 @@ router.post('/', async (req, res) => {
       });
     }
     
-    if (!content || content.trim().length === 0) {
+    if (!conteudo || conteudo.trim().length === 0) {
       global.emitTraffic('Velonews', 'error', 'Conteúdo é obrigatório');
       global.emitLog('error', 'POST /api/velonews - Conteúdo é obrigatório');
       return res.status(400).json({ 
@@ -57,8 +57,8 @@ router.post('/', async (req, res) => {
     }
 
     const velonewsData = {
-      title,
-      content,
+      titulo,
+      conteudo,
       isCritical: isCritical || false
     };
 
@@ -67,7 +67,7 @@ router.post('/', async (req, res) => {
     
     if (result.success) {
       global.emitTraffic('Velonews', 'completed', 'Concluído - Velonews criada com sucesso');
-      global.emitLog('success', `POST /api/velonews - Velonews "${title}" criada com sucesso`);
+      global.emitLog('success', `POST /api/velonews - Velonews "${titulo}" criada com sucesso`);
       global.emitJson(result);
       res.status(201).json(result);
     } else {
@@ -89,15 +89,15 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, content, isCritical } = req.body;
+    const { titulo, conteudo, isCritical } = req.body;
     
     global.emitTraffic('Velonews', 'received', `Entrada recebida - PUT /api/velonews/${id}`);
     global.emitLog('info', `PUT /api/velonews/${id} - Atualizando velonews`);
     global.emitJson({ id, ...req.body });
     
     const updateData = {};
-    if (title) updateData.title = title;
-    if (content) updateData.content = content;
+    if (titulo) updateData.titulo = titulo;
+    if (conteudo) updateData.conteudo = conteudo;
     if (isCritical !== undefined) updateData.isCritical = isCritical;
 
     global.emitTraffic('Velonews', 'processing', 'Transmitindo para DB');

@@ -1,4 +1,4 @@
-// VERSION: v3.3.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.4.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const { getDatabase } = require('../config/database');
 
 class BotPerguntas {
@@ -99,11 +99,11 @@ class BotPerguntas {
       };
 
       // Mapear campos do schema padrão
-      if (updateData.Pergunta) updateDoc.Pergunta = updateData.Pergunta;
-      if (updateData.Resposta) updateDoc.Resposta = updateData.Resposta;
-      if (updateData["Palavras-chave"]) updateDoc["Palavras-chave"] = updateData["Palavras-chave"];
-      if (updateData.Sinonimos !== undefined) updateDoc.Sinonimos = updateData.Sinonimos;
-      if (updateData.Tabulação !== undefined) updateDoc.Tabulação = updateData.Tabulação;
+      if (updateData.pergunta) updateDoc.pergunta = updateData.pergunta;
+      if (updateData.resposta) updateDoc.resposta = updateData.resposta;
+      if (updateData.palavrasChave) updateDoc.palavrasChave = updateData.palavrasChave;
+      if (updateData.sinonimos !== undefined) updateDoc.sinonimos = updateData.sinonimos;
+      if (updateData.tabulacao !== undefined) updateDoc.tabulacao = updateData.tabulacao;
 
       const result = await collection.updateOne(
         { _id: new ObjectId(id) },

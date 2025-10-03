@@ -1,4 +1,4 @@
-// VERSION: v3.2.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v3.3.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const BotPerguntas = require('../models/BotPerguntas');
@@ -35,24 +35,24 @@ router.post('/', async (req, res) => {
     global.emitLog('info', 'POST /api/bot-perguntas - Criando nova pergunta do bot');
     global.emitJson(req.body);
     
-    const { Pergunta, Resposta, "Palavras-chave": PalavrasChave, Sinonimos, Tabulação } = req.body;
+    const { pergunta, resposta, palavrasChave, sinonimos, tabulacao } = req.body;
     
     // Validar campos obrigatórios conforme schema MongoDB padrão
-    if (!Pergunta || !Resposta || !PalavrasChave) {
+    if (!pergunta || !resposta || !palavrasChave) {
       global.emitTraffic('Bot Perguntas', 'error', 'Dados obrigatórios ausentes');
-      global.emitLog('error', 'POST /api/bot-perguntas - Pergunta, Resposta e Palavras-chave são obrigatórios');
+      global.emitLog('error', 'POST /api/bot-perguntas - pergunta, resposta e palavrasChave são obrigatórios');
       return res.status(400).json({ 
         success: false, 
-        error: 'Pergunta, Resposta e Palavras-chave são obrigatórios' 
+        error: 'pergunta, resposta e palavrasChave são obrigatórios' 
       });
     }
 
     const perguntaData = {
-      Pergunta,
-      Resposta,
-      "Palavras-chave": PalavrasChave,
-      Sinonimos: Sinonimos || '',
-      Tabulação: Tabulação || ''
+      pergunta,
+      resposta,
+      palavrasChave,
+      sinonimos: sinonimos || '',
+      tabulacao: tabulacao || ''
     };
 
     global.emitTraffic('Bot Perguntas', 'processing', 'Transmitindo para DB');
@@ -60,7 +60,7 @@ router.post('/', async (req, res) => {
     
     if (result.success) {
       global.emitTraffic('Bot Perguntas', 'completed', 'Concluído - Pergunta criada com sucesso');
-      global.emitLog('success', `POST /api/bot-perguntas - Pergunta "${Pergunta}" criada com sucesso`);
+      global.emitLog('success', `POST /api/bot-perguntas - Pergunta "${pergunta}" criada com sucesso`);
       global.emitJson(result);
       res.status(201).json(result);
     } else {
@@ -82,18 +82,18 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { Pergunta, Resposta, "Palavras-chave": PalavrasChave, Sinonimos, Tabulação } = req.body;
+    const { pergunta, resposta, palavrasChave, sinonimos, tabulacao } = req.body;
     
     global.emitTraffic('Bot Perguntas', 'received', `Entrada recebida - PUT /api/bot-perguntas/${id}`);
     global.emitLog('info', `PUT /api/bot-perguntas/${id} - Atualizando pergunta do bot`);
     global.emitJson({ id, ...req.body });
     
     const updateData = {};
-    if (Pergunta) updateData.Pergunta = Pergunta;
-    if (Resposta) updateData.Resposta = Resposta;
-    if (PalavrasChave) updateData["Palavras-chave"] = PalavrasChave;
-    if (Sinonimos !== undefined) updateData.Sinonimos = Sinonimos;
-    if (Tabulação !== undefined) updateData.Tabulação = Tabulação;
+    if (pergunta) updateData.pergunta = pergunta;
+    if (resposta) updateData.resposta = resposta;
+    if (palavrasChave) updateData.palavrasChave = palavrasChave;
+    if (sinonimos !== undefined) updateData.sinonimos = sinonimos;
+    if (tabulacao !== undefined) updateData.tabulacao = tabulacao;
 
     global.emitTraffic('Bot Perguntas', 'processing', 'Transmitindo para DB');
     const result = await BotPerguntas.update(id, updateData);
