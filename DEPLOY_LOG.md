@@ -654,8 +654,8 @@ Adequação completa dos endpoints do backend para 100% de compatibilidade com f
 - Teste Bot_perguntas: Criar pergunta com pergunta, resposta, palavrasChave
 - Teste Artigos: Criar artigo com artigo_titulo, artigo_conteudo, categoria_titulo
 
-**Commit Hash:** [A ser definido]  
-**Status:** ✅ Pronto para Teste
+**Commit Hash:** 1c17fdd  
+**Status:** ✅ Sucesso
 
 ---
 
