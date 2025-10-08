@@ -659,4 +659,87 @@ Adequação completa dos endpoints do backend para 100% de compatibilidade com f
 
 ---
 
+## GitHub Push - 2024-12-19
+
+**Data/Hora:** 2024-12-19 23:59:00  
+**Tipo:** GitHub Push  
+**Versão:** v4.0.0  
+**Repositório:** admVeloHub/back-console  
+**Branch:** master  
+
+### Arquivos Modificados:
+- `backend/models/UserActivity.js` (v1.0.0) - **NOVO**
+- `backend/models/BotFeedback.js` (v1.0.0) - **NOVO**
+- `backend/routes/botAnalises.js` (v1.0.0) - **NOVO**
+- `backend/server.js` (v4.0.0)
+- `listagem de schema de coleções do mongoD.rb` (v1.3.0)
+- `DEPLOY_LOG.md`
+
+### Descrição:
+Implementação completa da API de Bot Análises com endpoint otimizado único:
+
+**Funcionalidades Implementadas:**
+- Modelo UserActivity.js para collection `console_conteudo.user_activity`
+- Modelo BotFeedback.js para collection `console_conteudo.bot_feedback`
+- Endpoint único otimizado `/api/bot-analises/dados-completos`
+- Retorno de dados brutos + metadados para máxima flexibilidade
+- Integração completa com Monitor Skynet
+
+**Endpoint Único:**
+- `GET /api/bot-analises/dados-completos`
+- Parâmetros: `periodo` (1dia|7dias|30dias|90dias|1ano|todos), `exibicao` (dia|semana|mes)
+- Retorno: Dados brutos completos + metadados para filtros dinâmicos
+
+**Estrutura de Retorno:**
+```json
+{
+  "dadosBrutos": {
+    "user_activity": Array, // Registros completos filtrados por período
+    "bot_feedback": Array   // Registros completos filtrados por período
+  },
+  "metadados": {
+    "agentes": Array,        // Lista de agentes disponíveis
+    "usuarios": Array,       // Lista de usuários únicos
+    "periodos": Array,       // Períodos disponíveis nos dados
+    "tiposAcao": Array,      // Tipos de ação disponíveis
+    "tiposFeedback": Array,  // Tipos de feedback disponíveis
+    "sessoes": Array         // IDs de sessão únicos
+  },
+  "resumo": {
+    "totalRegistros": Number,
+    "periodoInicio": String,
+    "periodoFim": String,
+    "totalUsuarios": Number,
+    "totalSessoes": Number
+  }
+}
+```
+
+**Benefícios da Implementação:**
+- ✅ Dados brutos completos para análises comportamentais específicas
+- ✅ Metadados para filtros dinâmicos no frontend
+- ✅ Filtros combinados (agente + período + usuário)
+- ✅ Análises de performance por agente
+- ✅ Comportamento de sessões específicas
+- ✅ Processamento local para análises específicas
+- ✅ Cache de 90 dias no frontend
+- ✅ Performance otimizada com consultas paralelas
+
+**Schemas MongoDB:**
+- Database: `console_conteudo`
+- Collections: `user_activity`, `bot_feedback`
+- Índices otimizados para performance
+- Métodos estáticos para consultas eficientes
+
+**Integração:**
+- Rota registrada no server.js
+- Monitor Skynet configurado
+- Logs detalhados de performance
+- Tratamento de erros padronizado
+
+**Commit Hash:** [PENDENTE]  
+**Status:** ✅ Implementação Completa
+
+---
+
 *Log gerado automaticamente pelo sistema de deploy*

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor Skynet - Console de Conteúdo VeloHub</title>
+    <title>Monitor Skynet v2.0 - Console de Conteúdo VeloHub</title>
     <link href="https://fonts.googleapis.com/css2?family=Turret+Road:wght@200;300;400;500;700;800&display=swap" rel="stylesheet">
     <style>
         * {
@@ -65,6 +65,18 @@
             padding: 15px;
             overflow-y: auto;
             position: relative;
+        }
+
+        .json-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .json-panel {
+            flex: 1;
+            height: calc(50vh - 60px);
         }
 
         .panel h2 {
@@ -141,15 +153,28 @@
 
         .json-display {
             font-family: 'Courier New', monospace;
-            font-size: 11px;
+            font-size: 10px;
             background: #0a0a0a;
             border: 1px solid #333;
             border-radius: 4px;
-            padding: 10px;
+            padding: 8px;
             white-space: pre-wrap;
             word-break: break-all;
-            max-height: 300px;
+            height: calc(100% - 60px);
             overflow-y: auto;
+            color: #00ff00;
+        }
+
+        /* Estilo específico para JSON Input */
+        #jsonInputDisplay {
+            border-left: 3px solid #00ffff;
+            background: #0a0a0a;
+        }
+
+        /* Estilo específico para JSON Output */
+        #jsonDisplay {
+            border-left: 3px solid #00ff00;
+            background: #0a0a0a;
         }
 
         .status-indicator {
@@ -226,11 +251,21 @@
             <div class="api-traffic" id="apiTraffic"></div>
         </div>
 
-        <!-- JSON Panel -->
-        <div class="panel">
-            <h2>JSON OUTPUT</h2>
-            <button class="clear-btn" onclick="clearJson()">CLEAR</button>
-            <div class="json-display" id="jsonDisplay">Aguardando dados...</div>
+        <!-- JSON Panels Container -->
+        <div class="json-container">
+            <!-- JSON Output Panel -->
+            <div class="panel json-panel">
+                <h2>JSON OUTPUT</h2>
+                <button class="clear-btn" onclick="clearJson()">CLEAR</button>
+                <div class="json-display" id="jsonDisplay">Aguardando dados...</div>
+            </div>
+
+            <!-- JSON Input Panel -->
+            <div class="panel json-panel">
+                <h2>JSON INPUT</h2>
+                <button class="clear-btn" onclick="clearJsonInput()">CLEAR</button>
+                <div class="json-display" id="jsonInputDisplay">Aguardando dados do MongoDB...</div>
+            </div>
         </div>
     </div>
 
@@ -242,6 +277,7 @@
         const consoleLog = document.getElementById('consoleLog');
         const apiTraffic = document.getElementById('apiTraffic');
         const jsonDisplay = document.getElementById('jsonDisplay');
+        const jsonInputDisplay = document.getElementById('jsonInputDisplay');
 
         // Status da conexão
         socket.on('connect', () => {
@@ -264,9 +300,14 @@
             addTrafficEntry(data);
         });
 
-        // Escutar JSON atual
+        // Escutar JSON atual (Output)
         socket.on('current-json', (data) => {
             updateJsonDisplay(data);
+        });
+
+        // Escutar JSON Input (dados recebidos do MongoDB)
+        socket.on('current-json-input', (data) => {
+            updateJsonInputDisplay(data);
         });
 
         // Funções para adicionar logs
@@ -303,6 +344,10 @@
             jsonDisplay.textContent = JSON.stringify(data, null, 2);
         }
 
+        function updateJsonInputDisplay(data) {
+            jsonInputDisplay.textContent = JSON.stringify(data, null, 2);
+        }
+
         // Funções de limpeza
         function clearConsole() {
             consoleLog.innerHTML = '';
@@ -314,6 +359,10 @@
 
         function clearJson() {
             jsonDisplay.textContent = 'Aguardando dados...';
+        }
+
+        function clearJsonInput() {
+            jsonInputDisplay.textContent = 'Aguardando dados do MongoDB...';
         }
 
         // Log inicial

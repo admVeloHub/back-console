@@ -15,6 +15,10 @@ const checkMonitoringFunctions = (req, res, next) => {
     global.emitJson = () => {};
   }
   
+  if (!global.emitJsonInput) {
+    global.emitJsonInput = () => {};
+  }
+  
   // Continuar imediatamente sem delays
   next();
 };
