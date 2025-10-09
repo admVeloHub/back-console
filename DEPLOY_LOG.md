@@ -714,6 +714,35 @@ Correções críticas para funcionamento da API Bot Análises:
 - Monitor Skynet com WebSocket estável
 - Conexão MongoDB otimizada
 
+---
+
+## GitHub Push - 2024-12-19
+
+**Data/Hora:** 2024-12-19 23:59:00  
+**Tipo:** GitHub Push  
+**Versão:** v4.0.2  
+**Repositório:** admVeloHub/back-console  
+**Branch:** master  
+
+### Arquivos Modificados:
+- `backend/server.js` (v4.0.2)
+- `DEPLOY_LOG.md`
+
+### Descrição:
+Correções críticas para WebSocket no Vercel:
+
+**Problemas Corrigidos:**
+- ✅ Configuração Socket.IO otimizada para Vercel (apenas polling)
+- ✅ CORS permissivo para todas as origens
+- ✅ CSP ajustado para permitir conexões WebSocket
+- ✅ Credentials desabilitado para compatibilidade Vercel
+- ✅ Timeout e buffer configurados para estabilidade
+
+**Funcionalidades Corrigidas:**
+- Monitor Skynet com WebSocket estável no Vercel
+- Conexões Socket.IO funcionando corretamente
+- Monitoramento em tempo real operacional
+
 **Endpoint Único:**
 - `GET /api/bot-analises/dados-completos`
 - Parâmetros: `periodo` (1dia|7dias|30dias|90dias|1ano|todos), `exibicao` (dia|semana|mes)

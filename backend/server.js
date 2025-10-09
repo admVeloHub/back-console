@@ -1,4 +1,4 @@
-// VERSION: v4.0.1 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v4.0.2 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -31,20 +31,16 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.NODE_ENV === 'production' 
-      ? [
-          `https://${process.env.FRONTEND_URL || 'front-console.vercel.app'}`,
-          'https://back-console.vercel.app',
-          'https://*.vercel.app'
-        ] 
-      : ['http://localhost:3000', 'http://localhost:3001'],
+    origin: "*", // Permitir todas as origens para Vercel
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true
+    credentials: false // Desabilitar credentials para Vercel
   },
-  transports: ['polling', 'websocket'],
+  transports: ['polling'], // Usar apenas polling no Vercel
   allowEIO3: true,
   pingTimeout: 60000,
-  pingInterval: 25000
+  pingInterval: 25000,
+  upgradeTimeout: 10000,
+  maxHttpBufferSize: 1e6
 });
 const PORT = process.env.PORT || 3001;
 
@@ -57,17 +53,15 @@ app.use(helmet({
       scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "ws:", "wss:", "https://back-console.vercel.app"]
+      connectSrc: ["'self'", "ws:", "wss:", "https:", "*"]
     }
   }
 }));
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? [`https://${process.env.FRONTEND_URL || 'front-console.vercel.app'}`] 
-    : ['http://localhost:3000'],
-  credentials: true,
+  origin: "*", // Permitir todas as origens para Vercel
+  credentials: false, // Desabilitar credentials para Vercel
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
 }));
 
 // Rate limiting
