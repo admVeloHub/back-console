@@ -1,4 +1,4 @@
-// VERSION: v4.0.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v4.0.1 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -8,6 +8,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const { connectToDatabase, checkDatabaseHealth } = require('./config/database');
 const { initializeCollections, getCollectionsStats } = require('./config/collections');
+const mongoose = require('mongoose');
 require('dotenv').config();
 
 // Importar rotas
@@ -31,13 +32,19 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: process.env.NODE_ENV === 'production' 
-      ? [`https://${process.env.FRONTEND_URL || 'front-console.vercel.app'}`] 
+      ? [
+          `https://${process.env.FRONTEND_URL || 'front-console.vercel.app'}`,
+          'https://back-console.vercel.app',
+          'https://*.vercel.app'
+        ] 
       : ['http://localhost:3000', 'http://localhost:3001'],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true
   },
   transports: ['polling', 'websocket'],
-  allowEIO3: true
+  allowEIO3: true,
+  pingTimeout: 60000,
+  pingInterval: 25000
 });
 const PORT = process.env.PORT || 3001;
 
@@ -197,8 +204,16 @@ const startServer = async () => {
     // Conectar ao MongoDB
     await connectToDatabase();
     await initializeCollections();
+    
+    // Configurar Mongoose
+    const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://lucasgravina:nKQu8bSN6iZl8FPo@velohubcentral.od7vwts.mongodb.net/?retryWrites=true&w=majority&appName=VelohubCentral';
+    await mongoose.connect(MONGODB_URI, {
+      dbName: 'console_conteudo'
+    });
+    
     console.log(`🗄️ MongoDB: Conectado`);
     console.log(`📊 Collections: Inicializadas`);
+    console.log(`🔗 Mongoose: Conectado ao console_conteudo`);
     
     // Iniciar servidor
     server.listen(PORT, () => {
