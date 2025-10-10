@@ -1,4 +1,4 @@
-// VERSION: v2.1.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v2.2.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const mongoose = require('mongoose');
 
 // Configurar conexão específica para o database console_config
@@ -16,37 +16,37 @@ const moduleStatusSchema = new mongoose.Schema({
   _trabalhador: {
     type: String,
     required: true,
-    default: 'off',
+    default: 'on',
     enum: ['on', 'off', 'revisao']
   },
   _pessoal: {
     type: String,
     required: true,
-    default: 'off',
+    default: 'on',
     enum: ['on', 'off', 'revisao']
   },
   _antecipacao: {
     type: String,
     required: true,
-    default: 'off',
+    default: 'on',
     enum: ['on', 'off', 'revisao']
   },
   _pgtoAntecip: {
     type: String,
     required: true,
-    default: 'off',
+    default: 'on',
     enum: ['on', 'off', 'revisao']
   },
   _irpf: {
     type: String,
     required: true,
-    default: 'off',
+    default: 'on',
     enum: ['on', 'off', 'revisao']
   },
   _seguro: {
     type: String,
     required: true,
-    default: 'off',
+    default: 'on',
     enum: ['on', 'off', 'revisao']
   }
 }, {
