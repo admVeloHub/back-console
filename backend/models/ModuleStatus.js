@@ -1,4 +1,4 @@
-// VERSION: v2.0.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v2.1.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const mongoose = require('mongoose');
 
 // Configurar conexão específica para o database console_config
@@ -42,6 +42,12 @@ const moduleStatusSchema = new mongoose.Schema({
     required: true,
     default: 'off',
     enum: ['on', 'off', 'revisao']
+  },
+  _seguro: {
+    type: String,
+    required: true,
+    default: 'off',
+    enum: ['on', 'off', 'revisao']
   }
 }, {
   timestamps: true,
@@ -54,6 +60,7 @@ moduleStatusSchema.index({ _pessoal: 1 });
 moduleStatusSchema.index({ _antecipacao: 1 });
 moduleStatusSchema.index({ _pgtoAntecip: 1 });
 moduleStatusSchema.index({ _irpf: 1 });
+moduleStatusSchema.index({ _seguro: 1 });
 moduleStatusSchema.index({ updatedAt: -1 });
 
 module.exports = configConnection.model('ModuleStatus', moduleStatusSchema, 'module_status');

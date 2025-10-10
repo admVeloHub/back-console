@@ -1,6 +1,8 @@
 listagem de schema de coleções do mongoDB
-<!-- VERSION: v1.3.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team -->
+<!-- VERSION: v1.6.0 | DATE: 2025-01-10 | AUTHOR: VeloHub Development Team -->
+
   🗄️ Database Principal: console_conteudo
+
 //schema console_conteudo.Artigos
 {
 _id: ObjectId,
@@ -8,7 +10,7 @@ tag: String,                    // Tag do artigo
 categoria_id: String,           // ID da categoria
 categoria_titulo: String,       // Título da categoria
 artigo_titulo: String,          // Título do artigo
-artigo_conteudo: String,        // Conteúdo do artigo
+artigo_conteudo: String,        // Conteúdo do artigo (FORMATADO - ver padrões abaixo)
 createdAt: Date,                // Data de criação
 updatedAt: Date                 // Data de atualização
 }
@@ -17,7 +19,7 @@ updatedAt: Date                 // Data de atualização
 {
 _id: ObjectId,
 pergunta: String,               // Pergunta do bot
-resposta: String,               // Resposta do bot
+resposta: String,               // Resposta do bot (FORMATADA - ver padrões abaixo)
 palavrasChave: String,          // Palavras-chave
 sinonimos: String,              // Sinônimos
 tabulacao: String,              // Tabulação
@@ -38,33 +40,40 @@ updatedAt: Date                 // Data de atualização
 //schema console_conteudo.user_activity
 {
 _id: ObjectId,
-userId: String,                 // Email do usuário
-action: String,                 // Tipo de ação (question_asked, etc.)
-details: Object,                // Detalhes da ação
-timestamp: Date,                // Data e hora da ação
-sessionId: String,              // ID da sessão (pode ser null)
-source: String,                 // Fonte da ação (chatbot, etc.)
-metadata: Object                // Metadados adicionais
+colaboradorNome: String,           // Nome do colaborador
+action: String,                    // Tipo de ação (question_asked, feedback_given, article_viewed, ai_button_used)
+details: {                         // Detalhes específicos da ação
+  question: String,                // Pergunta feita (para question_asked)
+  feedbackType: String,            // Tipo de feedback (positive/negative)
+  messageId: String,               // ID da mensagem (para feedback)
+  articleId: String,               // ID do artigo (para article_viewed)
+  articleTitle: String,            // Título do artigo
+  formatType: String               // Tipo de formatação (whatsapp/email)
+},
+sessionId: String,                 // ID da sessão
+source: String,                    // Fonte da ação (chatbot, ai_button, etc.)
+createdAt: Date,                   // Data de criação
+updatedAt: Date                    // Data de atualização
 }
 
 //schema console_conteudo.bot_feedback
 {
 _id: ObjectId,
-colaboradorNome: String,        // Email do colaborador
-action: String,                 // Tipo de ação (feedback_given, etc.)
-messageId: Number,              // ID da mensagem
-sessionId: String,              // ID da sessão
-source: String,                 // Fonte (chatbot, etc.)
-details: {                      // Detalhes do feedback
-  feedbackType: String,         // Tipo do feedback (negative, positive, etc.)
-  comment: String,              // Comentário do usuário
-  question: String,             // Pergunta original
-  answer: String,               // Resposta do bot
-  aiProvider: String,           // Provedor de IA (pode ser null)
-  responseSource: String        // Fonte da resposta (bot_perguntas, etc.)
+colaboradorNome: String,           // Nome do colaborador que deu o feedback
+action: String,                    // Tipo de ação (feedback_given)
+messageId: String,                 // ID da mensagem que recebeu o feedback
+sessionId: String,                 // ID da sessão
+source: String,                    // Fonte da resposta (chatbot, ai_button, clarification, etc.)
+details: {                         // Detalhes específicos do feedback
+  feedbackType: String,            // Tipo de feedback (positive/negative)
+  comment: String,                 // Comentário opcional do usuário
+  question: String,                // Pergunta original que gerou a resposta
+  answer: String,                  // Resposta do bot que recebeu o feedback
+  aiProvider: String,              // Provedor da IA (OpenAI, Gemini, null)
+  responseSource: String           // Origem da resposta (bot_perguntas, ai, clarification, etc.)
 },
-createdAt: Date,                // Data de criação
-updatedAt: Date                 // Data de atualização
+createdAt: Date,                   // Data de criação
+updatedAt: Date                    // Data de atualização
 }
 
 🗄️ Database: console_chamados
@@ -92,6 +101,7 @@ createdAt: Date,                // Data de criação
 updatedAt: Date                 // Data de atualização
 }
 
+
 🗄️ Database: console_config
 
 // Schema Config
@@ -104,7 +114,6 @@ _userClearance: {               // Permissões do usuário
   artigos: Boolean,
   velonews: Boolean,
   botPerguntas: Boolean,
-  botAnalises: Boolean,
   chamadosInternos: Boolean,
   igp: Boolean,
   qualidade: Boolean,
@@ -127,6 +136,7 @@ _pessoal: String,        // Status do Crédito Pessoal
 _antecipacao: String,    // Status da Antecipação
 _pgtoAntecip: String,    // Status do Pagamento Antecipado
 _irpf: String,           // Status do Módulo IRPF
+_seguro: String,         // Status do Módulo Seguro
 createdAt: Date,         // Data de criação
 updatedAt: Date          // Data de atualização
 }
@@ -212,3 +222,83 @@ createdAt: Date,                // Data de criação
 updatedAt: Date                 // Data de atualização (padronizado)
 }
 
+// ========================================
+// 📋 PADRÕES DE FORMATAÇÃO DE CONTEÚDO
+// ========================================
+// VERSION: v1.0.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+
+/*
+🎯 PADRÕES DE FORMATAÇÃO PARA CONTEÚDO (Bot_perguntas.resposta e Artigos.artigo_conteudo)
+
+1. QUEBRAS DE LINHA:
+   - Usar \n para quebras de linha simples
+   - Usar \n\n para separação de parágrafos
+   - Evitar mais de 2 \n consecutivos
+
+2. LISTAS NUMERADAS:
+   - Formato: "1. Item\n2. Item\n3. Item"
+   - Sempre usar números seguidos de ponto e espaço
+   - Uma quebra de linha entre cada item
+
+3. LISTAS COM BULLETS:
+   - Formato: "• Item\n• Item\n• Item"
+   - Usar bullet Unicode (•) seguido de espaço
+   - Uma quebra de linha entre cada item
+
+4. NEGRITO E ITÁLICO:
+   - Negrito: **texto** (markdown)
+   - Itálico: *texto* (markdown)
+   - Evitar HTML tags (<b>, <i>, <strong>, <em>)
+
+5. LINKS:
+   - Formato: [texto do link](URL)
+   - Sempre incluir texto descritivo
+   - URLs completas com http/https
+
+6. CARACTERES ESPECIAIS:
+   - Usar encoding UTF-8 correto
+   - Acentos: á, é, í, ó, ú, ã, õ, ç
+   - Símbolos: R$, %, º, ª, etc.
+
+7. ESTRUTURA DE PARÁGRAFOS:
+   - Máximo 3-4 linhas por parágrafo
+   - Usar \n\n para separar seções
+   - Evitar blocos de texto muito longos
+
+8. FORMATAÇÃO DE CÓDIGOS/COMANDOS:
+   - Usar `código` para inline
+   - Usar ```código``` para blocos
+   - Especificar linguagem quando relevante
+
+9. FORMATAÇÃO DE DATAS:
+   - Formato: DD/MM/AAAA
+   - Horários: HH:MM (24h)
+   - Evitar formatos ambíguos
+
+10. FORMATAÇÃO DE VALORES:
+    - Moeda: R$ 1.234,56
+    - Percentuais: 15%
+    - Números grandes: 1.000.000
+
+EXEMPLOS DE FORMATAÇÃO CORRETA:
+
+✅ BOM:
+"Para solicitar o crédito trabalhador:
+
+1. Acesse o portal VeloHub
+2. Preencha os dados pessoais
+3. Envie os documentos necessários
+
+**Importante:** O processo pode levar até 5 dias úteis.
+
+Para mais informações, consulte: [Manual do Crédito](https://manual.velohub.com)"
+
+❌ RUIM:
+"Para solicitar o crédito trabalhador você deve acessar o portal VeloHub preencher os dados pessoais enviar os documentos necessários o processo pode levar até 5 dias úteis para mais informações consulte o manual"
+
+APLICAÇÃO:
+- Bot_perguntas.resposta: Sempre formatar seguindo estes padrões
+- Artigos.artigo_conteudo: Sempre formatar seguindo estes padrões
+- Backend: Aplicar formatação automática se conteúdo não estiver formatado
+- Frontend: Renderizar formatação markdown corretamente
+*/

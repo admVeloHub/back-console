@@ -1,4 +1,4 @@
-// VERSION: v2.1.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v2.3.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const ModuleStatus = require('../models/ModuleStatus');
@@ -30,16 +30,22 @@ router.get('/', async (req, res) => {
     }
     
     // Mapear campos do schema para nomes do frontend
-    const result = {
+    const data = {
       'credito-trabalhador': statusDoc._trabalhador,
       'credito-pessoal': statusDoc._pessoal,
       'antecipacao': statusDoc._antecipacao,
       'pagamento-antecipado': statusDoc._pgtoAntecip,
-      'modulo-irpf': statusDoc._irpf
+      'modulo-irpf': statusDoc._irpf,
+      'modulo-seguro': statusDoc._seguro
+    };
+    
+    const result = {
+      success: true,
+      data: data
     };
     
     if (global.emitTraffic) {
-      global.emitTraffic('ModuleStatus', 'completed', `Status de ${Object.keys(result).length} módulos obtidos`);
+      global.emitTraffic('ModuleStatus', 'completed', `Status de ${Object.keys(data).length} módulos obtidos`);
     }
     
     if (global.emitJson) {
@@ -84,7 +90,7 @@ router.post('/', async (req, res) => {
       });
     }
     
-    const validKeys = ['credito-trabalhador', 'credito-pessoal', 'antecipacao', 'pagamento-antecipado', 'modulo-irpf'];
+    const validKeys = ['credito-trabalhador', 'credito-pessoal', 'antecipacao', 'pagamento-antecipado', 'modulo-irpf', 'modulo-seguro'];
     const validStatuses = ['on', 'off', 'revisao'];
     
     if (!validKeys.includes(moduleKey)) {
@@ -107,7 +113,8 @@ router.post('/', async (req, res) => {
       'credito-pessoal': '_pessoal',
       'antecipacao': '_antecipacao',
       'pagamento-antecipado': '_pgtoAntecip',
-      'modulo-irpf': '_irpf'
+      'modulo-irpf': '_irpf',
+      'modulo-seguro': '_seguro'
     };
     
     const fieldName = fieldMapping[moduleKey];
@@ -190,7 +197,7 @@ router.put('/', async (req, res) => {
       });
     }
     
-    const validKeys = ['credito-trabalhador', 'credito-pessoal', 'antecipacao', 'pagamento-antecipado', 'modulo-irpf'];
+    const validKeys = ['credito-trabalhador', 'credito-pessoal', 'antecipacao', 'pagamento-antecipado', 'modulo-irpf', 'modulo-seguro'];
     const validStatuses = ['on', 'off', 'revisao'];
     
     // Mapear moduleKey para campo do schema
@@ -199,7 +206,8 @@ router.put('/', async (req, res) => {
       'credito-pessoal': '_pessoal',
       'antecipacao': '_antecipacao',
       'pagamento-antecipado': '_pgtoAntecip',
-      'modulo-irpf': '_irpf'
+      'modulo-irpf': '_irpf',
+      'modulo-seguro': '_seguro'
     };
     
     // Validar todos os dados antes de fazer qualquer atualização
@@ -252,10 +260,7 @@ router.put('/', async (req, res) => {
     const responseData = {
       success: true,
       message: `${Object.keys(modules).length} módulos atualizados com sucesso`,
-      data: results.map(result => ({
-        ...result,
-        updatedAt: updatedModule.updatedAt
-      }))
+      data: modules
     };
     
     if (global.emitTraffic) {
