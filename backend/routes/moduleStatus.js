@@ -1,4 +1,4 @@
-// VERSION: v2.8.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v2.8.1 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const { ModuleStatus } = require('../models/ModuleStatus');
@@ -93,10 +93,10 @@ router.post('/', async (req, res) => {
     const { _id, moduleKey, status, updatedBy, dados, totalPerguntas } = req.body;
     
     if (global.emitTraffic) {
-      global.emitTraffic('ModuleStatus', 'received', `Entrada recebida - POST /api/module-status - _id: ${documentId}`);
+      global.emitTraffic('ModuleStatus', 'received', `Entrada recebida - POST /api/module-status - _id: ${_id || 'auto-detect'}`);
     }
     if (global.emitLog) {
-      global.emitLog('info', `POST /api/module-status - Processando requisição para _id: ${documentId}`);
+      global.emitLog('info', `POST /api/module-status - Processando requisição para _id: ${_id || 'auto-detect'}`);
     }
     if (global.emitJson) {
       global.emitJson(req.body);
