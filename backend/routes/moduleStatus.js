@@ -1,4 +1,4 @@
-// VERSION: v2.6.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v2.8.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const { ModuleStatus } = require('../models/ModuleStatus');
@@ -102,8 +102,20 @@ router.post('/', async (req, res) => {
       global.emitJson(req.body);
     }
     
-    // Se _id não foi fornecido, assumir que é para o documento de status
-    const documentId = _id || 'status';
+    // Detectar formato dos dados recebidos primeiro
+    const schemaFields = ['_trabalhador', '_pessoal', '_antecipacao', '_pgtoAntecip', '_irpf', '_seguro'];
+    const frontendKeys = ['credito-trabalhador', 'credito-pessoal', 'antecipacao', 'pagamento-antecipado', 'modulo-irpf', 'modulo-seguro'];
+    
+    const hasSchemaFields = schemaFields.some(field => req.body.hasOwnProperty(field));
+    const hasFrontendKeys = frontendKeys.some(key => req.body.hasOwnProperty(key));
+    
+    // Se não há _id e há chaves do frontend ou schema, assumir que é para status
+    let documentId = _id;
+    if (!_id && (hasFrontendKeys || hasSchemaFields)) {
+      documentId = 'status';
+    } else if (!_id) {
+      documentId = 'status'; // Padrão
+    }
     
     // Validar _id se fornecido
     if (_id && !['status', 'faq'].includes(_id)) {
@@ -115,9 +127,6 @@ router.post('/', async (req, res) => {
     
     // Processar documento de status dos módulos
     if (documentId === 'status') {
-      // Detectar formato dos dados recebidos
-      const schemaFields = ['_trabalhador', '_pessoal', '_antecipacao', '_pgtoAntecip', '_irpf', '_seguro'];
-      const hasSchemaFields = schemaFields.some(field => req.body.hasOwnProperty(field));
       
       if (hasSchemaFields) {
         // FORMATO NOVO: Frontend envia campos do schema diretamente
@@ -171,6 +180,78 @@ router.post('/', async (req, res) => {
           success: true,
           message: `${Object.keys(updateData).length} módulos atualizados com sucesso`,
           data: updateData
+        };
+        
+        if (global.emitJson) {
+          global.emitJson(responseData);
+        }
+        
+        return res.json(responseData);
+        
+      } else if (hasFrontendKeys) {
+        // FORMATO FRONTEND: Frontend envia chaves dos módulos (credito-trabalhador, credito-pessoal, etc.)
+        if (global.emitTraffic) {
+          global.emitTraffic('ModuleStatus', 'processing', 'Processando formato do frontend (chaves dos módulos)');
+        }
+        
+        // Mapear chaves do frontend para campos do schema
+        const fieldMapping = {
+          'credito-trabalhador': '_trabalhador',
+          'credito-pessoal': '_pessoal',
+          'antecipacao': '_antecipacao',
+          'pagamento-antecipado': '_pgtoAntecip',
+          'modulo-irpf': '_irpf',
+          'modulo-seguro': '_seguro'
+        };
+        
+        const updateData = {};
+        const validStatuses = ['on', 'off', 'revisao'];
+        
+        // Processar cada chave do frontend
+        for (const [frontendKey, status] of Object.entries(req.body)) {
+          if (frontendKeys.includes(frontendKey)) {
+            // Validar status
+            if (!validStatuses.includes(status)) {
+              return res.status(400).json({
+                success: false,
+                error: `Status inválido para ${frontendKey}: ${status}. Deve ser: on, off ou revisao`
+              });
+            }
+            
+            const schemaField = fieldMapping[frontendKey];
+            updateData[schemaField] = status;
+          }
+        }
+        
+        if (Object.keys(updateData).length === 0) {
+          return res.status(400).json({
+            success: false,
+            error: 'Nenhuma chave válida do frontend encontrada. Chaves válidas: credito-trabalhador, credito-pessoal, antecipacao, pagamento-antecipado, modulo-irpf, modulo-seguro'
+          });
+        }
+        
+        if (global.emitTraffic) {
+          global.emitTraffic('ModuleStatus', 'processing', `Atualizando ${Object.keys(updateData).length} campos via chaves do frontend`);
+        }
+        
+        // Atualizar documento
+        const updatedModule = await ModuleStatus.findOneAndUpdate(
+          { _id: 'status' },
+          updateData,
+          { upsert: true, new: true, runValidators: true }
+        );
+        
+        console.log(`Módulos atualizados via frontend: ${Object.keys(updateData).length} campos${updatedBy ? ` por ${updatedBy}` : ''}`);
+        
+        // Monitoramento e resposta
+        if (global.emitTraffic) {
+          global.emitTraffic('ModuleStatus', 'completed', `${Object.keys(updateData).length} módulos atualizados via frontend`);
+        }
+        
+        const responseData = {
+          success: true,
+          message: `${Object.keys(updateData).length} módulos atualizados com sucesso`,
+          data: req.body // Retornar os dados originais do frontend
         };
         
         if (global.emitJson) {

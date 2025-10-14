@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor Skynet v2.0 - Console de Conteúdo VeloHub</title>
+    <title>Monitor Skynet v2.1 - Console de Conteúdo VeloHub</title>
     <link href="https://fonts.googleapis.com/css2?family=Turret+Road:wght@200;300;400;500;700;800&display=swap" rel="stylesheet">
     <style>
         * {
@@ -58,7 +58,6 @@
         }
 
         .panel {
-            flex: 1;
             background: #111;
             border: 1px solid #333;
             border-radius: 8px;
@@ -67,8 +66,19 @@
             position: relative;
         }
 
+        /* Console Panel - mais estreito */
+        .console-panel {
+            flex: 0 0 25%;
+        }
+
+        /* API Traffic Panel - largura média */
+        .traffic-panel {
+            flex: 0 0 30%;
+        }
+
+        /* JSON Container - mais largo */
         .json-container {
-            flex: 1;
+            flex: 0 0 45%;
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -238,14 +248,14 @@
 
     <div class="container">
         <!-- Console Panel -->
-        <div class="panel">
+        <div class="panel console-panel">
             <h2>CONSOLE LOG</h2>
             <button class="clear-btn" onclick="clearConsole()">CLEAR</button>
             <div class="console-log" id="consoleLog"></div>
         </div>
 
         <!-- API Traffic Panel -->
-        <div class="panel">
+        <div class="panel traffic-panel">
             <h2>API TRAFFIC</h2>
             <button class="clear-btn" onclick="clearTraffic()">CLEAR</button>
             <div class="api-traffic" id="apiTraffic"></div>
