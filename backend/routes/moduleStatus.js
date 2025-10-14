@@ -1,4 +1,4 @@
-// VERSION: v2.8.1 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v2.8.2 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const { ModuleStatus } = require('../models/ModuleStatus');
@@ -375,16 +375,11 @@ router.put('/', async (req, res) => {
       global.emitJson(req.body);
     }
     
-    // Validar _id obrigatório
-    if (!_id) {
-      return res.status(400).json({
-        success: false,
-        error: '_id é obrigatório. Deve ser "status" ou "faq"'
-      });
-    }
+    // Se não há _id, assumir que é para status
+    const documentId = _id || 'status';
     
     // Processar documento de status dos módulos
-    if (_id === 'status') {
+    if (documentId === 'status') {
       // Remover updatedBy do objeto de módulos se presente
       delete modules.updatedBy;
       
