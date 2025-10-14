@@ -141,13 +141,14 @@ createdAt: Date,         // Data de criação
 updatedAt: Date          // Data de atualização
 }
 
-//schema console_config.module_status para perguntas frequentes do bot
+//schema console_analises.faq_bot
 // Schema para dados diários de perguntas frequentes do bot
-// Documento com _id: "faq" na mesma collection module_status
+// Documento com _id: "faq" na collection faq_bot
 {
 _id: "faq",                      // ID fixo para identificação do documento
 dados: [String],                 // Array com as 10 perguntas mais feitas (apenas os textos)
 totalPerguntas: Number,          // Total de perguntas no período
+createdAt: Date,                 // Data de criação
 updatedAt: Date                  // Data de atualização (controle de versionamento)
 }
 

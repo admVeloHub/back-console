@@ -1,13 +1,21 @@
-// VERSION: v2.3.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v2.4.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const mongoose = require('mongoose');
 
-// Configurar conexão específica para o database console_config
+// Configurar conexões específicas para os databases
 const CONFIG_DB_NAME = process.env.CONSOLE_CONFIG_DB || 'console_config';
+const ANALISES_DB_NAME = process.env.CONSOLE_ANALISES_DB || 'console_analises';
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://lucasgravina:nKQu8bSN6iZl8FPo@velohubcentral.od7vwts.mongodb.net/?retryWrites=true&w=majority&appName=VelohubCentral';
 
-// Criar conexão específica para o database de configuração
+// Criar conexão específica para o database de configuração (module_status)
 const configConnection = mongoose.createConnection(MONGODB_URI, {
   dbName: CONFIG_DB_NAME,
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
+
+// Criar conexão específica para o database de análises (faq_bot)
+const analisesConnection = mongoose.createConnection(MONGODB_URI, {
+  dbName: ANALISES_DB_NAME,
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
@@ -74,7 +82,7 @@ const faqSchema = new mongoose.Schema({
   }
 }, {
   timestamps: true,
-  collection: 'module_status'
+  collection: 'faq_bot'
 });
 
 // Índices para otimização do schema de status
@@ -92,7 +100,7 @@ faqSchema.index({ updatedAt: -1 });
 
 // Criar modelos
 const ModuleStatus = configConnection.model('ModuleStatus', moduleStatusSchema, 'module_status');
-const FAQ = configConnection.model('FAQ', faqSchema, 'module_status');
+const FAQ = analisesConnection.model('FAQ', faqSchema, 'faq_bot');
 
 // Exportar ambos os modelos
 module.exports = {
