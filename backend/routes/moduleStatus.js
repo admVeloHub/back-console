@@ -1,4 +1,4 @@
-// VERSION: v2.4.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v2.5.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const { ModuleStatus, FAQ } = require('../models/ModuleStatus');
@@ -62,14 +62,35 @@ router.get('/', async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error('Erro ao buscar status dos módulos:', error);
+    console.error('Stack trace:', error.stack);
     
     if (global.emitTraffic) {
-      global.emitTraffic('ModuleStatus', 'error', error.message);
+      global.emitTraffic('ModuleStatus', 'error', `Erro detalhado: ${error.message}`);
     }
     
-    res.status(500).json({
+    if (global.emitLog) {
+      global.emitLog('error', `GET /api/module-status - Erro: ${error.message}`);
+    }
+    
+    // Determinar tipo de erro para resposta mais específica
+    let errorMessage = 'Erro interno do servidor';
+    let statusCode = 500;
+    
+    if (error.name === 'MongoNetworkError' || error.name === 'MongoTimeoutError') {
+      errorMessage = 'Erro de conexão com o banco de dados';
+      statusCode = 503;
+    } else if (error.name === 'ValidationError') {
+      errorMessage = 'Erro de validação dos dados';
+      statusCode = 400;
+    } else if (error.name === 'CastError') {
+      errorMessage = 'Erro de formato de dados';
+      statusCode = 400;
+    }
+    
+    res.status(statusCode).json({
       success: false,
-      error: 'Erro interno do servidor'
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
@@ -99,13 +120,78 @@ router.post('/', async (req, res) => {
     
     // Processar documento de status dos módulos
     if (_id === 'status') {
-      // Validações para status dos módulos
-      if (!moduleKey || !status) {
-        return res.status(400).json({
-          success: false,
-          error: 'moduleKey e status são obrigatórios para _id: "status"'
-        });
-      }
+      // Detectar formato dos dados recebidos
+      const schemaFields = ['_trabalhador', '_pessoal', '_antecipacao', '_pgtoAntecip', '_irpf', '_seguro'];
+      const hasSchemaFields = schemaFields.some(field => req.body.hasOwnProperty(field));
+      
+      if (hasSchemaFields) {
+        // FORMATO NOVO: Frontend envia campos do schema diretamente
+        if (global.emitTraffic) {
+          global.emitTraffic('ModuleStatus', 'processing', 'Processando formato do schema MongoDB (campos _trabalhador, _pessoal, etc.)');
+        }
+        
+        // Extrair apenas os campos válidos do schema
+        const updateData = {};
+        const validStatuses = ['on', 'off', 'revisao'];
+        
+        for (const field of schemaFields) {
+          if (req.body.hasOwnProperty(field)) {
+            // Validar status
+            if (!validStatuses.includes(req.body[field])) {
+              return res.status(400).json({
+                success: false,
+                error: `Status inválido para ${field}: ${req.body[field]}. Deve ser: on, off ou revisao`
+              });
+            }
+            updateData[field] = req.body[field];
+          }
+        }
+        
+        if (Object.keys(updateData).length === 0) {
+          return res.status(400).json({
+            success: false,
+            error: 'Nenhum campo válido do schema encontrado. Campos válidos: _trabalhador, _pessoal, _antecipacao, _pgtoAntecip, _irpf, _seguro'
+          });
+        }
+        
+        if (global.emitTraffic) {
+          global.emitTraffic('ModuleStatus', 'processing', `Atualizando ${Object.keys(updateData).length} campos no documento status`);
+        }
+        
+        // Atualizar documento
+        const updatedModule = await ModuleStatus.findOneAndUpdate(
+          { _id: 'status' },
+          updateData,
+          { upsert: true, new: true, runValidators: true }
+        );
+        
+        console.log(`Módulos atualizados via schema: ${Object.keys(updateData).length} campos${updatedBy ? ` por ${updatedBy}` : ''}`);
+        
+        // Monitoramento e resposta
+        if (global.emitTraffic) {
+          global.emitTraffic('ModuleStatus', 'completed', `${Object.keys(updateData).length} módulos atualizados via schema`);
+        }
+        
+        const responseData = {
+          success: true,
+          message: `${Object.keys(updateData).length} módulos atualizados com sucesso`,
+          data: updateData
+        };
+        
+        if (global.emitJson) {
+          global.emitJson(responseData);
+        }
+        
+        return res.json(responseData);
+        
+      } else {
+        // FORMATO ANTIGO: Validação de moduleKey e status individual
+        if (!moduleKey || !status) {
+          return res.status(400).json({
+            success: false,
+            error: 'moduleKey e status são obrigatórios para _id: "status" (formato antigo) ou campos do schema (_trabalhador, _pessoal, etc.)'
+          });
+        }
       
       const validKeys = ['credito-trabalhador', 'credito-pessoal', 'antecipacao', 'pagamento-antecipado', 'modulo-irpf', 'modulo-seguro'];
       const validStatuses = ['on', 'off', 'revisao'];
@@ -173,6 +259,8 @@ router.post('/', async (req, res) => {
       }
       
       res.json(responseData);
+      
+      } // Fim do bloco do formato antigo
       
     } 
     // Processar documento de FAQ
