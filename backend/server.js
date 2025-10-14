@@ -21,6 +21,7 @@ const tkGestaoRoutes = require('./routes/tkGestao');
 const userPingRoutes = require('./routes/userPing');
 const usersRoutes = require('./routes/users');
 const moduleStatusRoutes = require('./routes/moduleStatus');
+const faqBotRoutes = require('./routes/faqBot');
 const qualidadeRoutes = require('./routes/qualidade');
 const botAnalisesRoutes = require('./routes/botAnalises');
 
@@ -96,6 +97,7 @@ app.use('/api/tk-gestao', tkGestaoRoutes);
 app.use('/api/user-ping', userPingRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/module-status', moduleStatusRoutes);
+app.use('/api/faq-bot', faqBotRoutes);
 app.use('/api/qualidade', qualidadeRoutes);
 app.use('/api/bot-analises', botAnalisesRoutes);
 

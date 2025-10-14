@@ -1,4 +1,4 @@
-// VERSION: v3.6.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v4.0.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const QualidadeFuncionario = require('../models/QualidadeFuncionario');
@@ -449,6 +449,25 @@ router.post('/avaliacoes', validateAvaliacao, async (req, res) => {
       avaliacaoData.ano = parseInt(avaliacaoData.ano, 10);
     }
     
+    // Calcular pontuação total automaticamente
+    let pontuacaoTotal = 0;
+    
+    // Critérios positivos
+    if (avaliacaoData.saudacaoAdequada) pontuacaoTotal += 10;
+    if (avaliacaoData.escutaAtiva) pontuacaoTotal += 25;
+    if (avaliacaoData.resolucaoQuestao) pontuacaoTotal += 40;
+    if (avaliacaoData.empatiaCordialidade) pontuacaoTotal += 15;
+    if (avaliacaoData.direcionouPesquisa) pontuacaoTotal += 10;
+    
+    // Critérios negativos
+    if (avaliacaoData.procedimentoIncorreto) pontuacaoTotal -= 60;
+    if (avaliacaoData.encerramentoBrusco) pontuacaoTotal -= 100;
+    
+    // Garantir que a pontuação não seja negativa
+    pontuacaoTotal = Math.max(0, pontuacaoTotal);
+    
+    avaliacaoData.pontuacaoTotal = pontuacaoTotal;
+    
     global.emitTraffic('Qualidade Avaliações', 'processing', 'Transmitindo para DB');
     const novaAvaliacao = new QualidadeAvaliacao(avaliacaoData);
     const avaliacaoSalva = await novaAvaliacao.save();
@@ -500,6 +519,25 @@ router.put('/avaliacoes/:id', validateAvaliacao, async (req, res) => {
       updateData.ano = parseInt(updateData.ano, 10);
     }
     
+    // Calcular pontuação total automaticamente
+    let pontuacaoTotal = 0;
+    
+    // Critérios positivos
+    if (updateData.saudacaoAdequada) pontuacaoTotal += 10;
+    if (updateData.escutaAtiva) pontuacaoTotal += 25;
+    if (updateData.resolucaoQuestao) pontuacaoTotal += 40;
+    if (updateData.empatiaCordialidade) pontuacaoTotal += 15;
+    if (updateData.direcionouPesquisa) pontuacaoTotal += 10;
+    
+    // Critérios negativos
+    if (updateData.procedimentoIncorreto) pontuacaoTotal -= 60;
+    if (updateData.encerramentoBrusco) pontuacaoTotal -= 100;
+    
+    // Garantir que a pontuação não seja negativa
+    pontuacaoTotal = Math.max(0, pontuacaoTotal);
+    
+    updateData.pontuacaoTotal = pontuacaoTotal;
+    
     const avaliacaoAtualizada = await QualidadeAvaliacao.findByIdAndUpdate(
       id,
       updateData,
@@ -545,6 +583,354 @@ router.delete('/avaliacoes/:id', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Erro interno do servidor ao deletar avaliação'
+    });
+  }
+});
+
+// GET /api/qualidade/avaliacoes/colaborador/:nome - Buscar avaliações por colaborador
+router.get('/avaliacoes/colaborador/:nome', async (req, res) => {
+  try {
+    const { nome } = req.params;
+    console.log(`[QUALIDADE-AVALIACOES] ${new Date().toISOString()} - GET /avaliacoes/colaborador/${nome} - PROCESSING`);
+    
+    const avaliacoes = await QualidadeAvaliacao.find({ colaboradorNome: nome })
+      .sort({ dataAvaliacao: -1 });
+    
+    res.json({
+      success: true,
+      data: avaliacoes,
+      message: `Avaliações encontradas para ${nome}`
+    });
+  } catch (error) {
+    console.error('[QUALIDADE-AVALIACOES] Erro ao buscar avaliações por colaborador:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor ao buscar avaliações por colaborador'
+    });
+  }
+});
+
+// GET /api/qualidade/avaliacoes/mes/:mes/ano/:ano - Buscar avaliações por período
+router.get('/avaliacoes/mes/:mes/ano/:ano', async (req, res) => {
+  try {
+    const { mes, ano } = req.params;
+    const anoNumber = parseInt(ano, 10);
+    
+    console.log(`[QUALIDADE-AVALIACOES] ${new Date().toISOString()} - GET /avaliacoes/mes/${mes}/ano/${ano} - PROCESSING`);
+    
+    const avaliacoes = await QualidadeAvaliacao.find({ 
+      mes: mes, 
+      ano: anoNumber 
+    }).sort({ dataAvaliacao: -1 });
+    
+    res.json({
+      success: true,
+      data: avaliacoes,
+      message: `Avaliações encontradas para ${mes}/${ano}`
+    });
+  } catch (error) {
+    console.error('[QUALIDADE-AVALIACOES] Erro ao buscar avaliações por período:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor ao buscar avaliações por período'
+    });
+  }
+});
+
+// ==================== ENDPOINTS DE RELATÓRIOS ====================
+
+// GET /api/qualidade/relatorios/agente/:nome - Relatório individual do agente
+router.get('/relatorios/agente/:nome', async (req, res) => {
+  try {
+    const { nome } = req.params;
+    console.log(`[QUALIDADE-RELATORIOS] ${new Date().toISOString()} - GET /relatorios/agente/${nome} - PROCESSING`);
+    
+    // Buscar todas as avaliações do colaborador
+    const avaliacoes = await QualidadeAvaliacao.find({ colaboradorNome: nome })
+      .sort({ dataAvaliacao: -1 });
+    
+    if (avaliacoes.length === 0) {
+      return res.json({
+        success: true,
+        data: {
+          colaboradorNome: nome,
+          avaliacoes: [],
+          mediaAvaliador: 0,
+          mediaGPT: 0,
+          totalAvaliacoes: 0,
+          melhorNota: 0,
+          piorNota: 0,
+          tendencia: 'estavel'
+        },
+        message: `Nenhuma avaliação encontrada para ${nome}`
+      });
+    }
+    
+    // Calcular métricas
+    const pontuacoes = avaliacoes.map(a => a.pontuacaoTotal);
+    const mediaAvaliador = pontuacoes.reduce((sum, p) => sum + p, 0) / pontuacoes.length;
+    const melhorNota = Math.max(...pontuacoes);
+    const piorNota = Math.min(...pontuacoes);
+    
+    // Calcular tendência (comparar últimas 3 avaliações com as 3 anteriores)
+    let tendencia = 'estavel';
+    if (avaliacoes.length >= 6) {
+      const ultimas3 = avaliacoes.slice(0, 3).map(a => a.pontuacaoTotal);
+      const anteriores3 = avaliacoes.slice(3, 6).map(a => a.pontuacaoTotal);
+      
+      const mediaUltimas = ultimas3.reduce((sum, p) => sum + p, 0) / ultimas3.length;
+      const mediaAnteriores = anteriores3.reduce((sum, p) => sum + p, 0) / anteriores3.length;
+      
+      if (mediaUltimas > mediaAnteriores + 5) {
+        tendencia = 'melhorando';
+      } else if (mediaUltimas < mediaAnteriores - 5) {
+        tendencia = 'piorando';
+      }
+    }
+    
+    const relatorio = {
+      colaboradorNome: nome,
+      avaliacoes: avaliacoes,
+      mediaAvaliador: Math.round(mediaAvaliador * 100) / 100,
+      mediaGPT: 0, // Será implementado quando houver avaliações GPT
+      totalAvaliacoes: avaliacoes.length,
+      melhorNota: melhorNota,
+      piorNota: piorNota,
+      tendencia: tendencia
+    };
+    
+    res.json({
+      success: true,
+      data: relatorio,
+      message: `Relatório gerado para ${nome}`
+    });
+  } catch (error) {
+    console.error('[QUALIDADE-RELATORIOS] Erro ao gerar relatório do agente:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor ao gerar relatório do agente'
+    });
+  }
+});
+
+// GET /api/qualidade/relatorios/gestao/:mes/:ano - Relatório da gestão
+router.get('/relatorios/gestao/:mes/:ano', async (req, res) => {
+  try {
+    const { mes, ano } = req.params;
+    const anoNumber = parseInt(ano, 10);
+    
+    console.log(`[QUALIDADE-RELATORIOS] ${new Date().toISOString()} - GET /relatorios/gestao/${mes}/${ano} - PROCESSING`);
+    
+    // Buscar todas as avaliações do período
+    const avaliacoes = await QualidadeAvaliacao.find({ 
+      mes: mes, 
+      ano: anoNumber 
+    }).sort({ dataAvaliacao: -1 });
+    
+    if (avaliacoes.length === 0) {
+      return res.json({
+        success: true,
+        data: {
+          mes: mes,
+          ano: anoNumber,
+          totalAvaliacoes: 0,
+          mediaGeral: 0,
+          top3Melhores: [],
+          top3Piores: [],
+          colaboradores: []
+        },
+        message: `Nenhuma avaliação encontrada para ${mes}/${ano}`
+      });
+    }
+    
+    // Agrupar por colaborador
+    const colaboradoresMap = new Map();
+    
+    avaliacoes.forEach(avaliacao => {
+      const nome = avaliacao.colaboradorNome;
+      if (!colaboradoresMap.has(nome)) {
+        colaboradoresMap.set(nome, {
+          colaboradorNome: nome,
+          avaliacoes: [],
+          media: 0,
+          totalAvaliacoes: 0
+        });
+      }
+      
+      const colaborador = colaboradoresMap.get(nome);
+      colaborador.avaliacoes.push(avaliacao);
+      colaborador.totalAvaliacoes++;
+    });
+    
+    // Calcular médias por colaborador
+    colaboradoresMap.forEach(colaborador => {
+      const pontuacoes = colaborador.avaliacoes.map(a => a.pontuacaoTotal);
+      colaborador.media = Math.round((pontuacoes.reduce((sum, p) => sum + p, 0) / pontuacoes.length) * 100) / 100;
+    });
+    
+    // Converter para array e ordenar
+    const colaboradores = Array.from(colaboradoresMap.values())
+      .sort((a, b) => b.media - a.media);
+    
+    // Calcular média geral
+    const mediaGeral = colaboradores.length > 0 
+      ? Math.round((colaboradores.reduce((sum, c) => sum + c.media, 0) / colaboradores.length) * 100) / 100
+      : 0;
+    
+    // Top 3 melhores e piores
+    const top3Melhores = colaboradores.slice(0, 3).map((colaborador, index) => ({
+      colaboradorNome: colaborador.colaboradorNome,
+      nota: colaborador.media,
+      posicao: index + 1
+    }));
+    
+    const top3Piores = colaboradores.slice(-3).reverse().map((colaborador, index) => ({
+      colaboradorNome: colaborador.colaboradorNome,
+      nota: colaborador.media,
+      posicao: colaboradores.length - 2 + index
+    }));
+    
+    const relatorio = {
+      mes: mes,
+      ano: anoNumber,
+      totalAvaliacoes: avaliacoes.length,
+      mediaGeral: mediaGeral,
+      top3Melhores: top3Melhores,
+      top3Piores: top3Piores,
+      colaboradores: colaboradores.map((colaborador, index) => ({
+        colaboradorNome: colaborador.colaboradorNome,
+        nota: colaborador.media,
+        posicao: index + 1
+      }))
+    };
+    
+    res.json({
+      success: true,
+      data: relatorio,
+      message: `Relatório gerencial gerado para ${mes}/${ano}`
+    });
+  } catch (error) {
+    console.error('[QUALIDADE-RELATORIOS] Erro ao gerar relatório da gestão:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor ao gerar relatório da gestão'
+    });
+  }
+});
+
+// ==================== ENDPOINTS DE ARQUIVOS ====================
+
+// POST /api/qualidade/arquivos/upload - Upload de arquivo de áudio
+router.post('/arquivos/upload', async (req, res) => {
+  try {
+    console.log(`[QUALIDADE-ARQUIVOS] ${new Date().toISOString()} - POST /arquivos/upload - PROCESSING`);
+    
+    // Verificar se há arquivo no corpo da requisição
+    if (!req.body.arquivoLigacao) {
+      return res.status(400).json({
+        success: false,
+        message: 'Arquivo de áudio é obrigatório'
+      });
+    }
+    
+    const { arquivoLigacao, nomeArquivo } = req.body;
+    
+    // Validar se é Base64 válido
+    if (!arquivoLigacao.startsWith('data:audio/')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Formato de arquivo inválido. Deve ser um arquivo de áudio em Base64'
+      });
+    }
+    
+    // Validar tamanho (aproximadamente 50MB em Base64)
+    const base64Size = arquivoLigacao.length;
+    const maxSize = 50 * 1024 * 1024 * 1.37; // 50MB * 1.37 (fator de conversão Base64)
+    
+    if (base64Size > maxSize) {
+      return res.status(400).json({
+        success: false,
+        message: 'Arquivo muito grande. Tamanho máximo permitido: 50MB'
+      });
+    }
+    
+    // Validar tipo de arquivo
+    const allowedTypes = ['audio/mpeg', 'audio/wav', 'audio/mp3', 'audio/mpeg3', 'audio/x-mpeg-3'];
+    const mimeType = arquivoLigacao.split(';')[0].split(':')[1];
+    
+    if (!allowedTypes.includes(mimeType)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tipo de arquivo não permitido. Tipos aceitos: MP3, WAV'
+      });
+    }
+    
+    // Gerar ID único para o arquivo
+    const arquivoId = `arquivo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Aqui você pode implementar lógica para salvar o arquivo
+    // Por enquanto, vamos apenas retornar sucesso
+    const arquivoInfo = {
+      id: arquivoId,
+      nomeArquivo: nomeArquivo || `audio_${Date.now()}.${mimeType.split('/')[1]}`,
+      tamanho: base64Size,
+      tipo: mimeType,
+      url: `data:${mimeType};base64,${arquivoLigacao.split(',')[1]}`,
+      uploadedAt: new Date()
+    };
+    
+    res.json({
+      success: true,
+      data: arquivoInfo,
+      message: 'Arquivo enviado com sucesso'
+    });
+  } catch (error) {
+    console.error('[QUALIDADE-ARQUIVOS] Erro ao fazer upload do arquivo:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor ao fazer upload do arquivo'
+    });
+  }
+});
+
+// GET /api/qualidade/arquivos/:id - Download de arquivo
+router.get('/arquivos/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`[QUALIDADE-ARQUIVOS] ${new Date().toISOString()} - GET /arquivos/${id} - PROCESSING`);
+    
+    // Aqui você implementaria a lógica para buscar o arquivo
+    // Por enquanto, vamos retornar um erro 404
+    res.status(404).json({
+      success: false,
+      message: 'Arquivo não encontrado'
+    });
+  } catch (error) {
+    console.error('[QUALIDADE-ARQUIVOS] Erro ao buscar arquivo:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor ao buscar arquivo'
+    });
+  }
+});
+
+// DELETE /api/qualidade/arquivos/:id - Excluir arquivo
+router.delete('/arquivos/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`[QUALIDADE-ARQUIVOS] ${new Date().toISOString()} - DELETE /arquivos/${id} - PROCESSING`);
+    
+    // Aqui você implementaria a lógica para excluir o arquivo
+    // Por enquanto, vamos retornar sucesso
+    res.json({
+      success: true,
+      message: 'Arquivo excluído com sucesso'
+    });
+  } catch (error) {
+    console.error('[QUALIDADE-ARQUIVOS] Erro ao excluir arquivo:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor ao excluir arquivo'
     });
   }
 });

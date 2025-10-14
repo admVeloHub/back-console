@@ -1,9 +1,9 @@
-// VERSION: v2.5.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v2.6.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
-const { ModuleStatus, FAQ } = require('../models/ModuleStatus');
+const { ModuleStatus } = require('../models/ModuleStatus');
 
-// GET /api/module-status - Buscar status atual de todos os módulos e FAQ
+// GET /api/module-status - Buscar status atual de todos os módulos
 router.get('/', async (req, res) => {
   try {
     if (global.emitTraffic) {
@@ -28,9 +28,6 @@ router.get('/', async (req, res) => {
       }
     }
     
-    // Buscar documento de FAQ
-    let faqDoc = await FAQ.findOne({ _id: 'faq' });
-    
     // Mapear campos do schema para nomes do frontend
     const data = {
       'credito-trabalhador': statusDoc._trabalhador,
@@ -43,16 +40,11 @@ router.get('/', async (req, res) => {
     
     const result = {
       success: true,
-      data: data,
-      faq: faqDoc ? {
-        dados: faqDoc.dados,
-        totalPerguntas: faqDoc.totalPerguntas,
-        updatedAt: faqDoc.updatedAt
-      } : null
+      data: data
     };
     
     if (global.emitTraffic) {
-      global.emitTraffic('ModuleStatus', 'completed', `Status de ${Object.keys(data).length} módulos e FAQ obtidos`);
+      global.emitTraffic('ModuleStatus', 'completed', `Status de ${Object.keys(data).length} módulos obtidos`);
     }
     
     if (global.emitJson) {
@@ -101,25 +93,28 @@ router.post('/', async (req, res) => {
     const { _id, moduleKey, status, updatedBy, dados, totalPerguntas } = req.body;
     
     if (global.emitTraffic) {
-      global.emitTraffic('ModuleStatus', 'received', `Entrada recebida - POST /api/module-status - _id: ${_id}`);
+      global.emitTraffic('ModuleStatus', 'received', `Entrada recebida - POST /api/module-status - _id: ${documentId}`);
     }
     if (global.emitLog) {
-      global.emitLog('info', `POST /api/module-status - Processando requisição para _id: ${_id}`);
+      global.emitLog('info', `POST /api/module-status - Processando requisição para _id: ${documentId}`);
     }
     if (global.emitJson) {
       global.emitJson(req.body);
     }
     
-    // Validar _id obrigatório
-    if (!_id) {
+    // Se _id não foi fornecido, assumir que é para o documento de status
+    const documentId = _id || 'status';
+    
+    // Validar _id se fornecido
+    if (_id && !['status', 'faq'].includes(_id)) {
       return res.status(400).json({
         success: false,
-        error: '_id é obrigatório. Deve ser "status" ou "faq"'
+        error: '_id deve ser "status" ou "faq"'
       });
     }
     
     // Processar documento de status dos módulos
-    if (_id === 'status') {
+    if (documentId === 'status') {
       // Detectar formato dos dados recebidos
       const schemaFields = ['_trabalhador', '_pessoal', '_antecipacao', '_pgtoAntecip', '_irpf', '_seguro'];
       const hasSchemaFields = schemaFields.some(field => req.body.hasOwnProperty(field));
@@ -262,77 +257,10 @@ router.post('/', async (req, res) => {
       
       } // Fim do bloco do formato antigo
       
-    } 
-    // Processar documento de FAQ
-    else if (_id === 'faq') {
-      // Validações para FAQ
-      if (!dados || !Array.isArray(dados) || totalPerguntas === undefined) {
-        return res.status(400).json({
-          success: false,
-          error: 'dados (array) e totalPerguntas são obrigatórios para _id: "faq"'
-        });
-      }
-      
-      if (dados.length > 10) {
-        return res.status(400).json({
-          success: false,
-          error: 'Máximo de 10 perguntas permitidas no array dados'
-        });
-      }
-      
-      if (totalPerguntas < 0) {
-        return res.status(400).json({
-          success: false,
-          error: 'totalPerguntas deve ser maior ou igual a 0'
-        });
-      }
-      
-      const updateData = {
-        dados: dados,
-        totalPerguntas: totalPerguntas
-      };
-      
-      if (global.emitTraffic) {
-        global.emitTraffic('ModuleStatus', 'processing', `Atualizando documento FAQ com ${dados.length} perguntas`);
-      }
-      
-      // Atualizar documento de FAQ
-      const updatedFAQ = await FAQ.findOneAndUpdate(
-        { _id: 'faq' },
-        updateData,
-        { 
-          upsert: true, 
-          new: true, 
-          runValidators: true 
-        }
-      );
-      
-      console.log(`FAQ atualizado com ${dados.length} perguntas e total de ${totalPerguntas} perguntas${updatedBy ? ` por ${updatedBy}` : ''}`);
-      
-      const responseData = {
-        success: true,
-        message: `FAQ atualizado com ${dados.length} perguntas`,
-        data: {
-          dados: updatedFAQ.dados,
-          totalPerguntas: updatedFAQ.totalPerguntas,
-          updatedAt: updatedFAQ.updatedAt
-        }
-      };
-      
-      if (global.emitTraffic) {
-        global.emitTraffic('ModuleStatus', 'completed', `FAQ atualizado com ${dados.length} perguntas`);
-      }
-      
-      if (global.emitJson) {
-        global.emitJson(responseData);
-      }
-      
-      res.json(responseData);
-      
     } else {
       return res.status(400).json({
         success: false,
-        error: '_id deve ser "status" ou "faq"'
+        error: 'Para atualizar FAQ, use o endpoint /api/faq-bot'
       });
     }
     
@@ -462,79 +390,10 @@ router.put('/', async (req, res) => {
       
       res.json(responseData);
       
-    } 
-    // Processar documento de FAQ
-    else if (_id === 'faq') {
-      const { dados, totalPerguntas } = modules;
-      
-      // Validações para FAQ
-      if (!dados || !Array.isArray(dados) || totalPerguntas === undefined) {
-        return res.status(400).json({
-          success: false,
-          error: 'dados (array) e totalPerguntas são obrigatórios para _id: "faq"'
-        });
-      }
-      
-      if (dados.length > 10) {
-        return res.status(400).json({
-          success: false,
-          error: 'Máximo de 10 perguntas permitidas no array dados'
-        });
-      }
-      
-      if (totalPerguntas < 0) {
-        return res.status(400).json({
-          success: false,
-          error: 'totalPerguntas deve ser maior ou igual a 0'
-        });
-      }
-      
-      const updateData = {
-        dados: dados,
-        totalPerguntas: totalPerguntas
-      };
-      
-      if (global.emitTraffic) {
-        global.emitTraffic('ModuleStatus', 'processing', `Atualizando documento FAQ com ${dados.length} perguntas`);
-      }
-      
-      // Atualizar documento de FAQ
-      const updatedFAQ = await FAQ.findOneAndUpdate(
-        { _id: 'faq' },
-        updateData,
-        { 
-          upsert: true, 
-          new: true, 
-          runValidators: true 
-        }
-      );
-      
-      console.log(`FAQ atualizado com ${dados.length} perguntas e total de ${totalPerguntas} perguntas${updatedBy ? ` por ${updatedBy}` : ''}`);
-      
-      const responseData = {
-        success: true,
-        message: `FAQ atualizado com ${dados.length} perguntas`,
-        data: {
-          dados: updatedFAQ.dados,
-          totalPerguntas: updatedFAQ.totalPerguntas,
-          updatedAt: updatedFAQ.updatedAt
-        }
-      };
-      
-      if (global.emitTraffic) {
-        global.emitTraffic('ModuleStatus', 'completed', `FAQ atualizado com ${dados.length} perguntas`);
-      }
-      
-      if (global.emitJson) {
-        global.emitJson(responseData);
-      }
-      
-      res.json(responseData);
-      
     } else {
       return res.status(400).json({
         success: false,
-        error: '_id deve ser "status" ou "faq"'
+        error: 'Para atualizar FAQ, use o endpoint /api/faq-bot'
       });
     }
     

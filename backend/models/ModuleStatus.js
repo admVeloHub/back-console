@@ -22,6 +22,10 @@ const analisesConnection = mongoose.createConnection(MONGODB_URI, {
 
 // Schema para status dos módulos (documento com _id: "status")
 const moduleStatusSchema = new mongoose.Schema({
+  _id: {
+    type: String,
+    required: true
+  },
   _trabalhador: {
     type: String,
     required: true,
@@ -65,6 +69,10 @@ const moduleStatusSchema = new mongoose.Schema({
 
 // Schema para perguntas frequentes do bot (documento com _id: "faq")
 const faqSchema = new mongoose.Schema({
+  _id: {
+    type: String,
+    required: true
+  },
   dados: {
     type: [String],
     required: true,
