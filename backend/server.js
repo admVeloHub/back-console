@@ -1,14 +1,14 @@
-// VERSION: v4.0.2 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v4.0.3 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 const http = require('http');
+const mongoose = require('mongoose');
 const { Server } = require('socket.io');
 const { connectToDatabase, checkDatabaseHealth } = require('./config/database');
 const { initializeCollections, getCollectionsStats } = require('./config/collections');
-const mongoose = require('mongoose');
 require('dotenv').config();
 
 // Importar rotas
