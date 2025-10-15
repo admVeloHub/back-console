@@ -1,4 +1,4 @@
-// VERSION: v2.2.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v2.3.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const UserActivity = require('../models/UserActivity');
@@ -226,7 +226,7 @@ router.get('/metricas-gerais', async (req, res) => {
     // Buscar dados no período
     const [userActivities, botFeedbacks] = await Promise.all([
       UserActivity.find({
-        timestamp: { $gte: startDate, $lte: endDate }
+        createdAt: { $gte: startDate, $lte: endDate }
       }).lean(),
       BotFeedback.find({
         createdAt: { $gte: startDate, $lte: endDate }
@@ -235,7 +235,7 @@ router.get('/metricas-gerais', async (req, res) => {
     
     // Calcular métricas
     const totalRegistros = userActivities.length + botFeedbacks.length;
-    const totalUsuarios = [...new Set(userActivities.map(a => a.userId))].filter(Boolean).length;
+    const totalUsuarios = [...new Set(userActivities.map(a => a.colaboradorNome))].filter(Boolean).length;
     const totalSessoes = [...new Set([
       ...userActivities.map(a => a.sessionId),
       ...botFeedbacks.map(f => f.sessionId)
@@ -243,7 +243,7 @@ router.get('/metricas-gerais', async (req, res) => {
     const totalBotFeedbacks = botFeedbacks.length;
     
     // Calcular horário pico
-    const horarios = userActivities.map(a => new Date(a.timestamp).getHours());
+    const horarios = userActivities.map(a => new Date(a.createdAt).getHours());
     const horarioPico = horarios.length > 0 ? 
       `${Math.max(...horarios)}:00-${Math.max(...horarios) + 1}:00` : "14:00-15:00";
     
@@ -270,7 +270,7 @@ router.get('/metricas-gerais', async (req, res) => {
     
     // Extrair metadados
     const agentes = [...new Set(botFeedbacks.map(f => f.colaboradorNome))].filter(Boolean);
-    const usuarios = [...new Set(userActivities.map(a => a.userId))].filter(Boolean);
+    const usuarios = [...new Set(userActivities.map(a => a.colaboradorNome))].filter(Boolean);
     const tiposAcao = [...new Set(userActivities.map(a => a.action))].filter(Boolean);
     const tiposFeedback = [...new Set(botFeedbacks.map(f => f.details?.feedbackType))].filter(Boolean);
     const sessoes = [...new Set([

@@ -1,8 +1,8 @@
-// VERSION: v1.0.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v1.1.1 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const mongoose = require('mongoose');
 
 const userActivitySchema = new mongoose.Schema({
-  userId: {
+  colaboradorNome: {
     type: String,
     required: true,
     index: true
@@ -16,12 +16,6 @@ const userActivitySchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     default: {}
   },
-  timestamp: {
-    type: Date,
-    required: true,
-    index: true,
-    default: Date.now
-  },
   sessionId: {
     type: String,
     index: true,
@@ -31,10 +25,6 @@ const userActivitySchema = new mongoose.Schema({
     type: String,
     required: true,
     index: true
-  },
-  metadata: {
-    type: mongoose.Schema.Types.Mixed,
-    default: {}
   }
 }, {
   timestamps: true,
@@ -42,15 +32,15 @@ const userActivitySchema = new mongoose.Schema({
 });
 
 // Índices para performance
-userActivitySchema.index({ userId: 1, timestamp: -1 });
-userActivitySchema.index({ action: 1, timestamp: -1 });
-userActivitySchema.index({ source: 1, timestamp: -1 });
-userActivitySchema.index({ sessionId: 1, timestamp: -1 });
+userActivitySchema.index({ colaboradorNome: 1, createdAt: -1 });
+userActivitySchema.index({ action: 1, createdAt: -1 });
+userActivitySchema.index({ source: 1, createdAt: -1 });
+userActivitySchema.index({ sessionId: 1, createdAt: -1 });
 
 // Métodos estáticos para consultas otimizadas
 userActivitySchema.statics.getMetricsByPeriod = function(period, startDate, endDate) {
   const matchStage = {
-    timestamp: {
+    createdAt: {
       $gte: startDate,
       $lte: endDate
     }
@@ -62,7 +52,7 @@ userActivitySchema.statics.getMetricsByPeriod = function(period, startDate, endD
       $group: {
         _id: null,
         totalActivities: { $sum: 1 },
-        uniqueUsers: { $addToSet: '$userId' },
+        uniqueUsers: { $addToSet: '$colaboradorNome' },
         uniqueSessions: { $addToSet: '$sessionId' },
         actions: { $push: '$action' },
         sources: { $push: '$source' }
@@ -85,7 +75,7 @@ userActivitySchema.statics.getHourlyDistribution = function(startDate, endDate) 
   return this.aggregate([
     {
       $match: {
-        timestamp: {
+        createdAt: {
           $gte: startDate,
           $lte: endDate
         }
@@ -93,7 +83,7 @@ userActivitySchema.statics.getHourlyDistribution = function(startDate, endDate) 
     },
     {
       $group: {
-        _id: { $hour: '$timestamp' },
+        _id: { $hour: '$createdAt' },
         count: { $sum: 1 }
       }
     },
@@ -110,7 +100,7 @@ userActivitySchema.statics.getTopActions = function(startDate, endDate, limit = 
   return this.aggregate([
     {
       $match: {
-        timestamp: {
+        createdAt: {
           $gte: startDate,
           $lte: endDate
         }
@@ -133,14 +123,14 @@ userActivitySchema.statics.getTopActions = function(startDate, endDate, limit = 
 
 userActivitySchema.statics.getRecentActivities = function(startDate, endDate, limit = 20) {
   return this.find({
-    timestamp: {
+    createdAt: {
       $gte: startDate,
       $lte: endDate
     }
   })
-  .sort({ timestamp: -1 })
+  .sort({ createdAt: -1 })
   .limit(limit)
-  .select('userId action timestamp source details')
+  .select('colaboradorNome action createdAt source details')
   .lean();
 };
 
