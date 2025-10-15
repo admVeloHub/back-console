@@ -1,4 +1,4 @@
-// VERSION: v2.1.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v2.2.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const UserActivity = require('../models/UserActivity');
@@ -280,26 +280,15 @@ router.get('/metricas-gerais', async (req, res) => {
     
     const response = {
       success: true,
-      data: {
-        resumo: {
-          totalRegistros,
-          totalUsuarios,
-          totalSessoes,
-          totalBotFeedbacks
-        },
-        metadados: {
-          agentes,
-          usuarios,
-          tiposAcao,
-          tiposFeedback,
-          sessoes,
-          horariosPico: [horarioPico],
-          crescimento,
-          perguntasFrequentes: perguntasFrequentesArray
-        },
-        dadosBrutos: {
-          atividades: userActivities  // Incluir array completo de user_activity
-        }
+      totalPerguntas: userActivities.filter(a => a.action === 'question_asked').length,
+      usuariosAtivos: totalUsuarios,
+      horarioPico,
+      crescimento,
+      mediaDiaria,
+      totalRegistros,
+      totalAtividades: userActivities.length,
+      dadosBrutos: {
+        atividades: userActivities  // Incluir array completo de user_activity
       }
     };
     
