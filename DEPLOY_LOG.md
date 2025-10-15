@@ -4,6 +4,43 @@
 
 **Data/Hora:** 2024-12-19 23:59:00  
 **Tipo:** GitHub Push  
+**Versão:** v4.0.3  
+**Repositório:** admVeloHub/back-console  
+**Branch:** master  
+
+### Arquivos Modificados:
+- `backend/routes/botAnalises.js` (v2.1.0)
+
+### Descrição:
+Adição do campo dadosBrutos.atividades no endpoint /api/bot-analises/metricas-gerais:
+
+**Funcionalidades Implementadas:**
+- Adicionado campo `dadosBrutos.atividades` com array completo de user_activity
+- Mantida compatibilidade total com estrutura existente do endpoint
+- Frontend pode fazer filtros e cálculos específicos nos dados brutos
+- Versão do arquivo atualizada para v2.1.0
+
+**Alterações Técnicas:**
+- Endpoint `/api/bot-analises/metricas-gerais` modificado
+- Campo `dadosBrutos.atividades` retorna todos os registros de user_activity do período
+- Estrutura de resposta mantida com novo campo adicionado
+- Compatibilidade 100% com frontend existente
+
+**Benefícios:**
+- ✅ Dados brutos disponíveis para cálculos no frontend
+- ✅ Flexibilidade para filtros específicos
+- ✅ Compatibilidade total mantida
+- ✅ Performance otimizada mantida
+
+**Commit Hash:** 1eeae51  
+**Status:** ✅ Sucesso
+
+---
+
+## GitHub Push - 2024-12-19
+
+**Data/Hora:** 2024-12-19 23:59:00  
+**Tipo:** GitHub Push  
 **Versão:** v3.10.0  
 **Repositório:** admVeloHub/back-console  
 **Branch:** master  
@@ -797,6 +834,61 @@ Correções críticas para WebSocket no Vercel:
 
 **Commit Hash:** [PENDENTE]  
 **Status:** ✅ Implementação Completa
+
+---
+
+## GitHub Push - 2024-12-19
+
+**Data/Hora:** 2024-12-19 23:59:00  
+**Tipo:** GitHub Push  
+**Versão:** v4.0.5  
+**Repositório:** admVeloHub/back-console  
+**Branch:** master  
+
+### Arquivos Modificados:
+- `backend/models/Users.js` (v1.5.0)
+- `backend/routes/users.js` (v1.4.0)
+
+### Descrição:
+Correção crítica de inconsistência no schema _userClearance - adição do campo botAnalises:
+
+**Problema Resolvido:**
+- Schema oficial incluía `botAnalises: Boolean` mas backend não implementava
+- Inconsistência entre documentação e implementação
+- Usuários não conseguiam ter permissão para módulo Bot Análises
+
+**Correções Implementadas:**
+- Adicionado campo `botAnalises: { type: Boolean, default: false }` ao _userClearance
+- Posicionado corretamente entre `botPerguntas` e `chamadosInternos`
+- Atualizado valor padrão para `botAnalises: false`
+- Corrigido endpoint POST /api/users para incluir botAnalises
+- Versões atualizadas: Users.js v1.5.0, users.js v1.4.0
+
+**Schema Final Alinhado:**
+```json
+_userClearance: {
+  artigos: Boolean,
+  velonews: Boolean,
+  botPerguntas: Boolean,
+  botAnalises: Boolean,        // ✅ ADICIONADO
+  chamadosInternos: Boolean,
+  igp: Boolean,
+  qualidade: Boolean,
+  capacity: Boolean,
+  config: Boolean,
+  servicos: Boolean
+}
+```
+
+**Benefícios:**
+- ✅ Schema 100% alinhado com documentação oficial
+- ✅ Usuários podem ter permissão para Bot Análises
+- ✅ Compatibilidade total mantida
+- ✅ Validações funcionando corretamente
+- ✅ 10 campos no _userClearance (antes eram 9)
+
+**Commit Hash:** [PENDENTE]  
+**Status:** ✅ Correção Aplicada
 
 ---
 
