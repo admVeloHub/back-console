@@ -1,4 +1,4 @@
-// VERSION: v2.0.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v2.1.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const UserActivity = require('../models/UserActivity');
@@ -296,6 +296,9 @@ router.get('/metricas-gerais', async (req, res) => {
           horariosPico: [horarioPico],
           crescimento,
           perguntasFrequentes: perguntasFrequentesArray
+        },
+        dadosBrutos: {
+          atividades: userActivities  // Incluir array completo de user_activity
         }
       }
     };
