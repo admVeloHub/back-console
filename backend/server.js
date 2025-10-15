@@ -1,4 +1,4 @@
-// VERSION: v4.0.4 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v4.0.5 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -43,7 +43,7 @@ const io = new Server(server, {
   pingInterval: 25000,
   upgradeTimeout: 10000,
   maxHttpBufferSize: 1e6,
-  serveClient: false, // Desabilitar cliente Socket.IO
+  serveClient: true, // Habilitar cliente Socket.IO para Monitor Skynet
   connectTimeout: 45000
 });
 const PORT = process.env.PORT || 3001;

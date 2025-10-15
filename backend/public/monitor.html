@@ -281,8 +281,25 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        // Conectar ao WebSocket
-        const socket = io();
+        // Fallback para CDN caso o servidor não sirva o Socket.IO
+        if (typeof io === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.socket.io/4.7.2/socket.io.min.js';
+            script.onload = function() {
+                initializeSocket();
+            };
+            document.head.appendChild(script);
+        } else {
+            initializeSocket();
+        }
+        
+        function initializeSocket() {
+            // Conectar ao WebSocket
+            const socket = io({
+                transports: ['polling'],
+                timeout: 20000,
+                forceNew: true
+            });
         const statusIndicator = document.getElementById('statusIndicator');
         const consoleLog = document.getElementById('consoleLog');
         const apiTraffic = document.getElementById('apiTraffic');
@@ -375,9 +392,10 @@
             jsonInputDisplay.textContent = 'Aguardando dados do MongoDB...';
         }
 
-        // Log inicial
-        addConsoleLog('info', 'Monitor Skynet inicializado');
-        addConsoleLog('info', 'Aguardando conexões da API...');
+            // Log inicial
+            addConsoleLog('info', 'Monitor Skynet inicializado');
+            addConsoleLog('info', 'Aguardando conexões da API...');
+        }
     </script>
 </body>
 </html>
