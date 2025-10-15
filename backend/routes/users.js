@@ -1,4 +1,4 @@
-// VERSION: v1.4.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v1.5.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const router = express.Router();
 const Users = require('../models/Users');
@@ -118,11 +118,26 @@ router.put('/:email', async (req, res) => {
     const { email } = req.params;
     const updateData = req.body;
     
+    // Log do payload recebido para debug
+    console.log('📥 PUT /api/users/:email - Payload recebido:', JSON.stringify(updateData, null, 2));
+    
+    // Emitir JSON Input para o Monitor Skynet
+    if (global.emitJsonInput) {
+      global.emitJsonInput({
+        endpoint: 'PUT /api/users/:email',
+        email: email,
+        payload: updateData,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
     // Remover campos que não devem ser atualizados
     delete updateData._id;
     delete updateData._userMail;
     delete updateData.createdAt;
     delete updateData.updatedAt;
+    
+    console.log('📝 PUT /api/users/:email - Dados para atualização:', JSON.stringify(updateData, null, 2));
     
     const updatedUser = await Users.findOneAndUpdate(
       { _userMail: email },
@@ -137,6 +152,17 @@ router.put('/:email', async (req, res) => {
       });
     }
     
+    console.log('✅ PUT /api/users/:email - Usuário atualizado:', JSON.stringify(updatedUser, null, 2));
+    
+    // Emitir JSON de resposta para o Monitor Skynet
+    if (global.emitJson) {
+      global.emitJson({
+        endpoint: 'PUT /api/users/:email',
+        response: updatedUser,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
     if (global.emitTraffic) {
       global.emitTraffic('PUT /api/users/:email', 'SUCCESS', `Usuário atualizado: ${email}`);
     }
@@ -146,7 +172,7 @@ router.put('/:email', async (req, res) => {
       data: updatedUser
     });
   } catch (error) {
-    console.error('Erro ao atualizar usuário:', error);
+    console.error('❌ Erro ao atualizar usuário:', error);
     
     if (global.emitTraffic) {
       global.emitTraffic('PUT /api/users/:email', 'ERROR', error.message);

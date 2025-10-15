@@ -887,7 +887,7 @@ _userClearance: {
 - ✅ Validações funcionando corretamente
 - ✅ 10 campos no _userClearance (antes eram 9)
 
-**Commit Hash:** [PENDENTE]  
+**Commit Hash:** addeec7  
 **Status:** ✅ Correção Aplicada
 
 ---

@@ -1,4 +1,4 @@
-// VERSION: v4.0.3 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v4.0.4 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -38,10 +38,13 @@ const io = new Server(server, {
   },
   transports: ['polling'], // Usar apenas polling no Vercel
   allowEIO3: true,
+  allowEIO4: true,
   pingTimeout: 60000,
   pingInterval: 25000,
   upgradeTimeout: 10000,
-  maxHttpBufferSize: 1e6
+  maxHttpBufferSize: 1e6,
+  serveClient: false, // Desabilitar cliente Socket.IO
+  connectTimeout: 45000
 });
 const PORT = process.env.PORT || 3001;
 
