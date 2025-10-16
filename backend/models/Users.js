@@ -1,4 +1,4 @@
-// VERSION: v1.6.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v1.9.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const mongoose = require('mongoose');
 
 // Configurar conexão específica para o database console_config
@@ -43,14 +43,24 @@ const userSchema = new mongoose.Schema({
     servicos: { type: Boolean, default: false }
   },
   _userTickets: {
-    type: mongoose.Schema.Types.Mixed,
-    default: {}
+    artigos: { type: Boolean, default: false },
+    processos: { type: Boolean, default: false },
+    roteiros: { type: Boolean, default: false },
+    treinamentos: { type: Boolean, default: false },
+    funcionalidades: { type: Boolean, default: false },
+    recursos: { type: Boolean, default: false },
+    gestao: { type: Boolean, default: false },
+    rhFin: { type: Boolean, default: false },
+    facilities: { type: Boolean, default: false }
   },
   _funcoesAdministrativas: {
-    avaliador: { type: Boolean, default: false }
+    avaliador: { type: Boolean, default: false },
+    auditoria: { type: Boolean, default: false },
+    relatoriosGestao: { type: Boolean, default: false }
   }
 }, {
   timestamps: true,
+  versionKey: false,
   collection: 'users'
 });
 

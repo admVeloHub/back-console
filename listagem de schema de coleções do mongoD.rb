@@ -1,5 +1,5 @@
 listagem de schema de coleções do mongoDB
-<!-- VERSION: v1.7.2 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team -->
+<!-- VERSION: v1.10.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team -->
 
   🗄️ Database Principal: console_conteudo
 
@@ -114,6 +114,7 @@ _userClearance: {               // Permissões do usuário
   artigos: Boolean,
   velonews: Boolean,
   botPerguntas: Boolean,
+  botAnalises: Boolean,         // Permissão para Bot Análises
   chamadosInternos: Boolean,
   igp: Boolean,
   qualidade: Boolean,
@@ -121,10 +122,24 @@ _userClearance: {               // Permissões do usuário
   config: Boolean,
   servicos: Boolean
 },
-_userTickets: Object,           // Tipos de tickets
+_userTickets: {                 // Tipos de tickets
+  artigos: Boolean,
+  processos: Boolean,
+  roteiros: Boolean,
+  treinamentos: Boolean,
+  funcionalidades: Boolean,
+  recursos: Boolean,
+  gestao: Boolean,
+  rhFin: Boolean,
+  facilities: Boolean
+},
 _funcoesAdministrativas: {      // Funções administrativas
-  avaliador: Boolean            // Se é avaliador no módulo Qualidade
-}
+  avaliador: Boolean,           // Se é avaliador no módulo Qualidade
+  auditoria: Boolean,           // Se tem permissão para auditoria
+  relatoriosGestao: Boolean     // Se tem permissão para relatórios de gestão
+},
+createdAt: Date,                // Data de criação
+updatedAt: Date                 // Data de atualização
 }
 
 //schema console_config.module_status
