@@ -4,6 +4,37 @@
 
 **Data/Hora:** 2024-12-19 23:59:00  
 **Tipo:** GitHub Push  
+**Versão:** v1.13.0  
+**Repositório:** admVeloHub/back-console  
+**Branch:** master  
+
+### Arquivos Modificados:
+- `backend/server.js` (v4.1.0)
+- `backend/public/monitor.html` (v2.3.0)
+- `package.json` (dependência uuid adicionada)
+
+### Descrição:
+Implementação de Server-Sent Events (SSE) para substituir Socket.IO e resolver problemas de compatibilidade com Vercel. O monitor agora funciona perfeitamente no ambiente serverless, mantendo todas as funcionalidades de tempo real.
+
+### Funcionalidades Implementadas:
+- ✅ Rota `/events` para streaming SSE
+- ✅ Reconexão automática de clientes
+- ✅ Buffer de eventos para reconexões
+- ✅ Heartbeat para manter conexões vivas
+- ✅ Compatibilidade total com Vercel
+- ✅ Monitor em tempo real funcionando
+
+### Problemas Resolvidos:
+- ❌ Erro 400 Bad Request do Socket.IO no Vercel
+- ❌ Limitações de WebSocket em ambiente serverless
+- ✅ Monitor funcionando perfeitamente em produção
+
+---
+
+## GitHub Push - 2024-12-19
+
+**Data/Hora:** 2024-12-19 23:59:00  
+**Tipo:** GitHub Push  
 **Versão:** v1.12.0  
 **Repositório:** admVeloHub/back-console  
 **Branch:** master  
