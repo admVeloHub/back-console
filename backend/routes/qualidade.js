@@ -1355,8 +1355,11 @@ router.delete('/atuacoes/:id', async (req, res) => {
 // GET /api/qualidade/funcoes - Listar todas as funções cadastradas
 router.get('/funcoes', async (req, res) => {
   try {
+    global.emitTraffic('Qualidade Funções', 'received', 'Entrada recebida - GET /api/qualidade/funcoes');
+    global.emitLog('info', 'GET /api/qualidade/funcoes - Listando funções');
     console.log('🔍 [COMPLIANCE] GET /api/qualidade/funcoes - Iniciando listagem');
     
+    global.emitTraffic('Qualidade Funções', 'processing', 'Consultando DB');
     // Buscar todas as funções ordenadas por createdAt DESC
     const funcoes = await QualidadeFuncoes.find({}).sort({ createdAt: -1 });
     
@@ -1366,10 +1369,15 @@ router.get('/funcoes', async (req, res) => {
       count: funcoes.length
     };
     
+    global.emitTraffic('Qualidade Funções', 'completed', `Concluído - ${funcoes.length} funções encontradas`);
+    global.emitLog('success', `GET /api/qualidade/funcoes - ${funcoes.length} funções retornadas`);
+    global.emitJson(response);
     console.log('🔍 [COMPLIANCE] GET /api/qualidade/funcoes - Response:', response);
     
     res.json(response);
   } catch (error) {
+    global.emitTraffic('Qualidade Funções', 'error', `Erro: ${error.message}`);
+    global.emitLog('error', `GET /api/qualidade/funcoes - Erro: ${error.message}`);
     console.error('[QUALIDADE-FUNCOES] Erro ao listar funções:', error);
     const response = {
       success: false,
@@ -1383,9 +1391,12 @@ router.get('/funcoes', async (req, res) => {
 // POST /api/qualidade/funcoes - Criar nova função
 router.post('/funcoes', async (req, res) => {
   try {
-    const { funcao, descricao } = req.body;
-    
+    global.emitTraffic('Qualidade Funções', 'received', 'Entrada recebida - POST /api/qualidade/funcoes');
+    global.emitLog('info', 'POST /api/qualidade/funcoes - Criando nova função');
+    global.emitJson(req.body);
     console.log('🔍 [COMPLIANCE] POST /api/qualidade/funcoes - Body:', req.body);
+    
+    const { funcao, descricao } = req.body;
     
     // Validação obrigatória: funcao não vazio
     if (!funcao || funcao.trim() === '') {
@@ -1393,10 +1404,13 @@ router.post('/funcoes', async (req, res) => {
         success: false,
         error: 'Nome da função é obrigatório'
       };
+      global.emitTraffic('Qualidade Funções', 'error', 'Validação falhou - Nome da função é obrigatório');
+      global.emitLog('error', 'POST /api/qualidade/funcoes - Validação falhou');
       console.log('🔍 [COMPLIANCE] POST /api/qualidade/funcoes - Validation Error Response:', response);
       return res.status(400).json(response);
     }
     
+    global.emitTraffic('Qualidade Funções', 'processing', 'Transmitindo para DB');
     // Criar nova função
     const novaFuncao = new QualidadeFuncoes({
       funcao: funcao.trim(),
@@ -1410,10 +1424,15 @@ router.post('/funcoes', async (req, res) => {
       data: funcaoSalva
     };
     
+    global.emitTraffic('Qualidade Funções', 'completed', 'Concluído - Função criada com sucesso');
+    global.emitLog('success', `POST /api/qualidade/funcoes - Função "${funcaoSalva.funcao}" criada com sucesso`);
+    global.emitJson(response);
     console.log('🔍 [COMPLIANCE] POST /api/qualidade/funcoes - Body:', req.body, 'Response:', response);
     
     res.status(201).json(response);
   } catch (error) {
+    global.emitTraffic('Qualidade Funções', 'error', `Erro: ${error.message}`);
+    global.emitLog('error', `POST /api/qualidade/funcoes - Erro: ${error.message}`);
     console.error('[QUALIDADE-FUNCOES] Erro ao criar função:', error);
     
     // Verificar se é erro de duplicação
@@ -1441,6 +1460,9 @@ router.put('/funcoes/:id', async (req, res) => {
     const { id } = req.params;
     const { funcao, descricao } = req.body;
     
+    global.emitTraffic('Qualidade Funções', 'received', `Entrada recebida - PUT /api/qualidade/funcoes/${id}`);
+    global.emitLog('info', `PUT /api/qualidade/funcoes/${id} - Atualizando função`);
+    global.emitJson(req.body);
     console.log('🔍 [COMPLIANCE] PUT /api/qualidade/funcoes/:id - Body:', req.body);
     
     // Validar ObjectId
@@ -1449,6 +1471,8 @@ router.put('/funcoes/:id', async (req, res) => {
         success: false,
         error: 'ID inválido'
       };
+      global.emitTraffic('Qualidade Funções', 'error', 'ID inválido');
+      global.emitLog('error', `PUT /api/qualidade/funcoes/${id} - ID inválido`);
       console.log('🔍 [COMPLIANCE] PUT /api/qualidade/funcoes/:id - Invalid ID Response:', response);
       return res.status(400).json(response);
     }
@@ -1459,6 +1483,8 @@ router.put('/funcoes/:id', async (req, res) => {
         success: false,
         error: 'Nome da função é obrigatório'
       };
+      global.emitTraffic('Qualidade Funções', 'error', 'Validação falhou - Nome da função é obrigatório');
+      global.emitLog('error', `PUT /api/qualidade/funcoes/${id} - Validação falhou`);
       console.log('🔍 [COMPLIANCE] PUT /api/qualidade/funcoes/:id - Validation Error Response:', response);
       return res.status(400).json(response);
     }
@@ -1470,10 +1496,13 @@ router.put('/funcoes/:id', async (req, res) => {
         success: false,
         error: 'Função não encontrada'
       };
+      global.emitTraffic('Qualidade Funções', 'error', 'Função não encontrada');
+      global.emitLog('error', `PUT /api/qualidade/funcoes/${id} - Função não encontrada`);
       console.log('🔍 [COMPLIANCE] PUT /api/qualidade/funcoes/:id - Not Found Response:', response);
       return res.status(404).json(response);
     }
     
+    global.emitTraffic('Qualidade Funções', 'processing', 'Atualizando no DB');
     // Atualizar função
     const updateData = {
       funcao: funcao.trim(),
@@ -1492,10 +1521,15 @@ router.put('/funcoes/:id', async (req, res) => {
       data: funcaoAtualizada
     };
     
+    global.emitTraffic('Qualidade Funções', 'completed', 'Concluído - Função atualizada com sucesso');
+    global.emitLog('success', `PUT /api/qualidade/funcoes/${id} - Função "${funcaoAtualizada.funcao}" atualizada com sucesso`);
+    global.emitJson(response);
     console.log('🔍 [COMPLIANCE] PUT /api/qualidade/funcoes/:id - Body:', req.body, 'Response:', response);
     
     res.json(response);
   } catch (error) {
+    global.emitTraffic('Qualidade Funções', 'error', `Erro: ${error.message}`);
+    global.emitLog('error', `PUT /api/qualidade/funcoes/${id} - Erro: ${error.message}`);
     console.error('[QUALIDADE-FUNCOES] Erro ao atualizar função:', error);
     
     // Verificar se é erro de duplicação
@@ -1522,6 +1556,8 @@ router.delete('/funcoes/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
+    global.emitTraffic('Qualidade Funções', 'received', `Entrada recebida - DELETE /api/qualidade/funcoes/${id}`);
+    global.emitLog('info', `DELETE /api/qualidade/funcoes/${id} - Deletando função`);
     console.log('🔍 [COMPLIANCE] DELETE /api/qualidade/funcoes/:id - Iniciando deleção');
     
     // Validar ObjectId
@@ -1530,6 +1566,8 @@ router.delete('/funcoes/:id', async (req, res) => {
         success: false,
         error: 'ID inválido'
       };
+      global.emitTraffic('Qualidade Funções', 'error', 'ID inválido');
+      global.emitLog('error', `DELETE /api/qualidade/funcoes/${id} - ID inválido`);
       console.log('🔍 [COMPLIANCE] DELETE /api/qualidade/funcoes/:id - Invalid ID Response:', response);
       return res.status(400).json(response);
     }
@@ -1541,10 +1579,13 @@ router.delete('/funcoes/:id', async (req, res) => {
         success: false,
         error: 'Função não encontrada'
       };
+      global.emitTraffic('Qualidade Funções', 'error', 'Função não encontrada');
+      global.emitLog('error', `DELETE /api/qualidade/funcoes/${id} - Função não encontrada`);
       console.log('🔍 [COMPLIANCE] DELETE /api/qualidade/funcoes/:id - Not Found Response:', response);
       return res.status(404).json(response);
     }
     
+    global.emitTraffic('Qualidade Funções', 'processing', 'Verificando uso por funcionários');
     // Verificar se há funcionários usando esta função
     const funcionariosUsandoFuncao = await QualidadeFuncionario.find({
       $or: [
@@ -1558,10 +1599,13 @@ router.delete('/funcoes/:id', async (req, res) => {
         success: false,
         error: 'Função está em uso por funcionários. Não é possível deletar.'
       };
+      global.emitTraffic('Qualidade Funções', 'error', 'Função em uso por funcionários');
+      global.emitLog('error', `DELETE /api/qualidade/funcoes/${id} - Função em uso`);
       console.log('🔍 [COMPLIANCE] DELETE /api/qualidade/funcoes/:id - In Use Error Response:', response);
       return res.status(409).json(response);
     }
     
+    global.emitTraffic('Qualidade Funções', 'processing', 'Deletando do DB');
     // Deletar função
     await QualidadeFuncoes.findByIdAndDelete(id);
     
@@ -1570,10 +1614,15 @@ router.delete('/funcoes/:id', async (req, res) => {
       message: 'Função deletada com sucesso'
     };
     
+    global.emitTraffic('Qualidade Funções', 'completed', 'Concluído - Função deletada com sucesso');
+    global.emitLog('success', `DELETE /api/qualidade/funcoes/${id} - Função "${funcaoExistente.funcao}" deletada com sucesso`);
+    global.emitJson(response);
     console.log('🔍 [COMPLIANCE] DELETE /api/qualidade/funcoes/:id - Response:', response);
     
     res.json(response);
   } catch (error) {
+    global.emitTraffic('Qualidade Funções', 'error', `Erro: ${error.message}`);
+    global.emitLog('error', `DELETE /api/qualidade/funcoes/${id} - Erro: ${error.message}`);
     console.error('[QUALIDADE-FUNCOES] Erro ao deletar função:', error);
     const response = {
       success: false,
@@ -1586,4 +1635,4 @@ router.delete('/funcoes/:id', async (req, res) => {
 
 module.exports = router;
 
-// VERSION: v1.1.0 | DATE: 2024-12-19 | AUTHOR: Lucas Gravina - VeloHub Development Team
+// VERSION: v5.1.0 | DATE: 2024-12-19 | AUTHOR: Lucas Gravina - VeloHub Development Team
