@@ -1,4 +1,4 @@
-// VERSION: v4.0.5 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v4.1.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -6,7 +6,7 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 const http = require('http');
 const mongoose = require('mongoose');
-const { Server } = require('socket.io');
+const { v4: uuidv4 } = require('uuid');
 const { connectToDatabase, checkDatabaseHealth } = require('./config/database');
 const { initializeCollections, getCollectionsStats } = require('./config/collections');
 require('dotenv').config();
@@ -30,23 +30,33 @@ const { checkMonitoringFunctions } = require('./middleware/monitoring');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "*", // Permitir todas as origens para Vercel
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: false // Desabilitar credentials para Vercel
-  },
-  transports: ['polling'], // Usar apenas polling no Vercel
-  allowEIO3: true,
-  allowEIO4: true,
-  pingTimeout: 60000,
-  pingInterval: 25000,
-  upgradeTimeout: 10000,
-  maxHttpBufferSize: 1e6,
-  serveClient: true, // Habilitar cliente Socket.IO para Monitor Skynet
-  connectTimeout: 45000
-});
 const PORT = process.env.PORT || 3001;
+
+// Configuração SSE - substitui Socket.IO
+let sseClients = [];  // Array de { res, lastEventId }
+let eventBuffer = []; // Buffer de eventos para reconexões
+
+// Função para enviar evento SSE
+const sendSSEEvent = (res, data, eventType = 'message', id = uuidv4()) => {
+  const eventData = `id: ${id}\nevent: ${eventType}\ndata: ${JSON.stringify(data)}\n\n`;
+  res.write(eventData);
+};
+
+// Broadcast para todos clientes
+const broadcastEvent = (data, eventType = 'message') => {
+  const id = uuidv4();
+  // Adiciona ao buffer para reconexões
+  eventBuffer.push({ id, type: eventType, data, timestamp: Date.now() });
+  // Limpa buffer antigo (últimos 100 eventos)
+  if (eventBuffer.length > 100) eventBuffer = eventBuffer.slice(-100);
+
+  // Envia para clientes conectados
+  sseClients.forEach(({ res, lastEventId }) => {
+    if (!lastEventId || id > lastEventId) {
+      sendSSEEvent(res, data, eventType, id);
+    }
+  });
+};
 
 // Middleware de segurança
 app.use(helmet({
@@ -143,6 +153,45 @@ app.get('/monitor', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'monitor.html'));
 });
 
+// Rota SSE principal para monitoramento
+app.get('/events', (req, res) => {
+  // Headers SSE
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.flushHeaders();
+
+  // Reconexão: envia eventos perdidos via Last-Event-ID
+  const lastEventId = req.headers['last-event-id'] || '0';
+  const client = { res, lastEventId };
+
+  sseClients.push(client);
+  req.socket.setTimeout(0);  // Mantém conexão aberta
+
+  // Envia eventos pendentes
+  eventBuffer
+    .filter(event => event.id > lastEventId)
+    .forEach(event => sendSSEEvent(res, event.data, event.type, event.id));
+
+  // Envia heartbeat a cada 15s para manter vivo
+  const heartbeat = setInterval(() => {
+    if (!res.writableEnded) {
+      res.write(`: heartbeat\n\n`);
+    }
+  }, 15000);
+
+  // Cleanup no disconnect
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    sseClients = sseClients.filter(c => c.res !== res);
+    res.end();
+  });
+
+  // Mensagem inicial
+  sendSSEEvent(res, { message: 'Conectado ao Monitor Skynet via SSE' }, 'connected');
+});
+
 // Error handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -152,50 +201,38 @@ app.use((err, req, res, next) => {
   });
 });
 
-// WebSocket para monitoramento
-io.on('connection', (socket) => {
-  console.log('🔌 Cliente conectado ao Monitor Skynet');
-  
-  socket.on('disconnect', () => {
-    console.log('🔌 Cliente desconectado do Monitor Skynet');
-  });
-});
-
-// Função para emitir logs para o monitor
-const emitLog = (level, message) => {
-  io.emit('console-log', {
-    level,
-    message,
-    timestamp: new Date().toISOString()
-  });
+// Funções globais de monitoramento via SSE
+global.emitLog = (level, message) => {
+  broadcastEvent({ 
+    level, 
+    message, 
+    timestamp: new Date().toISOString() 
+  }, 'console-log');
 };
 
-// Função para emitir tráfego da API
-const emitTraffic = (origin, status, message, details = null) => {
-  io.emit('api-traffic', {
-    origin,
-    status,
-    message,
-    details,
-    timestamp: new Date().toISOString()
-  });
+global.emitTraffic = (origin, status, message, details = null) => {
+  broadcastEvent({ 
+    origin, 
+    status, 
+    message, 
+    details, 
+    timestamp: new Date().toISOString() 
+  }, 'api-traffic');
 };
 
-// Função para emitir JSON atual
-const emitJson = (data) => {
-  io.emit('current-json', data);
+global.emitJson = (data) => {
+  broadcastEvent({ 
+    data, 
+    timestamp: new Date().toISOString() 
+  }, 'current-json');
 };
 
-// Função para emitir JSON Input (dados recebidos do MongoDB)
-const emitJsonInput = (data) => {
-  io.emit('current-json-input', data);
+global.emitJsonInput = (data) => {
+  broadcastEvent({ 
+    data, 
+    timestamp: new Date().toISOString() 
+  }, 'current-json-input');
 };
-
-// Tornar as funções disponíveis globalmente
-global.emitLog = emitLog;
-global.emitTraffic = emitTraffic;
-global.emitJson = emitJson;
-global.emitJsonInput = emitJsonInput;
 
 // Inicializar servidor
 const startServer = async () => {
@@ -217,9 +254,10 @@ const startServer = async () => {
     // Iniciar servidor
     server.listen(PORT, () => {
       console.log(`🚀 Servidor rodando na porta ${PORT}`);
-      console.log(`📊 Console de Conteúdo VeloHub v4.0.0`);
+      console.log(`📊 Console de Conteúdo VeloHub v4.1.0`);
       console.log(`🌐 Ambiente: ${process.env.NODE_ENV || 'development'}`);
       console.log(`📡 Monitor Skynet: http://localhost:${PORT}/monitor`);
+      console.log(`🔄 SSE Events: http://localhost:${PORT}/events`);
     });
   } catch (error) {
     console.error('❌ Erro ao iniciar servidor:', error);

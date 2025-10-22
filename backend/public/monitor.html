@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor Skynet v2.2 - Console de Conteúdo VeloHub</title>
+    <title>Monitor Skynet v2.3 - Console de Conteúdo VeloHub</title>
     <link href="https://fonts.googleapis.com/css2?family=Turret+Road:wght@200;300;400;500;700;800&display=swap" rel="stylesheet">
     <style>
         * {
@@ -279,121 +279,116 @@
         </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
     <script>
-        // Fallback para CDN caso o servidor não sirva o Socket.IO
-        if (typeof io === 'undefined') {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.socket.io/4.7.2/socket.io.min.js';
-            script.onload = function() {
-                initializeSocket();
-            };
-            document.head.appendChild(script);
-        } else {
-            initializeSocket();
-        }
-        
-        function initializeSocket() {
-            // Conectar ao WebSocket
-            const socket = io({
-                transports: ['polling'],
-                timeout: 20000,
-                forceNew: true
-            });
-        const statusIndicator = document.getElementById('statusIndicator');
-        const consoleLog = document.getElementById('consoleLog');
-        const apiTraffic = document.getElementById('apiTraffic');
-        const jsonDisplay = document.getElementById('jsonDisplay');
-        const jsonInputDisplay = document.getElementById('jsonInputDisplay');
-
-        // Status da conexão
-        socket.on('connect', () => {
-            statusIndicator.classList.add('connected');
-            addConsoleLog('info', 'Conectado ao Monitor Skynet');
-        });
-
-        socket.on('disconnect', () => {
-            statusIndicator.classList.remove('connected');
-            addConsoleLog('error', 'Desconectado do Monitor Skynet');
-        });
-
-        // Escutar logs do console
-        socket.on('console-log', (data) => {
-            addConsoleLog(data.level, data.message, data.timestamp);
-        });
-
-        // Escutar tráfego da API
-        socket.on('api-traffic', (data) => {
-            addTrafficEntry(data);
-        });
-
-        // Escutar JSON atual (Output)
-        socket.on('current-json', (data) => {
-            updateJsonDisplay(data);
-        });
-
-        // Escutar JSON Input (dados recebidos do MongoDB)
-        socket.on('current-json-input', (data) => {
-            updateJsonInputDisplay(data);
-        });
-
-        // Funções para adicionar logs
-        function addConsoleLog(level, message, timestamp = new Date()) {
-            const logEntry = document.createElement('div');
-            logEntry.className = `log-entry log-${level}`;
-            logEntry.innerHTML = `
-                <span style="color: #888;">[${timestamp}]</span>
-                <span style="color: #00ff00;">[${level.toUpperCase()}]</span>
-                ${message}
-            `;
-            consoleLog.appendChild(logEntry);
-            consoleLog.scrollTop = consoleLog.scrollHeight;
-        }
-
-        function addTrafficEntry(data) {
-            const trafficEntry = document.createElement('div');
-            trafficEntry.className = `traffic-entry ${data.status}`;
-            trafficEntry.innerHTML = `
-                <div class="traffic-time">${data.timestamp}</div>
-                <div class="traffic-origin">Origem: ${data.origin}</div>
-                <div class="traffic-status ${data.status}">${data.message}</div>
-                ${data.details ? `<div style="color: #888; font-size: 10px;">${data.details}</div>` : ''}
-            `;
-            apiTraffic.insertBefore(trafficEntry, apiTraffic.firstChild);
-            
-            // Manter apenas os últimos 50 entries
-            while (apiTraffic.children.length > 50) {
-                apiTraffic.removeChild(apiTraffic.lastChild);
-            }
-        }
-
-        function updateJsonDisplay(data) {
-            jsonDisplay.textContent = JSON.stringify(data, null, 2);
-        }
-
-        function updateJsonInputDisplay(data) {
-            jsonInputDisplay.textContent = JSON.stringify(data, null, 2);
-        }
-
-        // Funções de limpeza
+        // Funções de limpeza (manter como estão)
         function clearConsole() {
-            consoleLog.innerHTML = '';
+            const consoleLog = document.getElementById('consoleLog');
+            if (consoleLog) consoleLog.innerHTML = '';
         }
 
         function clearTraffic() {
-            apiTraffic.innerHTML = '';
+            const apiTraffic = document.getElementById('apiTraffic');
+            if (apiTraffic) apiTraffic.innerHTML = '';
         }
 
         function clearJson() {
-            jsonDisplay.textContent = 'Aguardando dados do frontend...';
+            const jsonDisplay = document.getElementById('jsonDisplay');
+            if (jsonDisplay) jsonDisplay.textContent = 'Aguardando dados do frontend...';
         }
 
         function clearJsonInput() {
-            jsonInputDisplay.textContent = 'Aguardando resposta do backend...';
+            const jsonInputDisplay = document.getElementById('jsonInputDisplay');
+            if (jsonInputDisplay) jsonInputDisplay.textContent = 'Aguardando resposta do backend...';
         }
 
+        // Inicializar SSE quando a página carregar
+        document.addEventListener('DOMContentLoaded', initializeSSE);
+
+        // SUBSTITUIR: Socket.IO por EventSource
+        function initializeSSE() {
+            const eventSource = new EventSource('/events');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const consoleLog = document.getElementById('consoleLog');
+            const apiTraffic = document.getElementById('apiTraffic');
+            const jsonDisplay = document.getElementById('jsonDisplay');
+            const jsonInputDisplay = document.getElementById('jsonInputDisplay');
+
+            // Status da conexão
+            eventSource.addEventListener('connected', (e) => {
+                statusIndicator.classList.add('connected');
+                addConsoleLog('info', 'Conectado ao Monitor Skynet via SSE');
+            });
+
+            // Escutar logs do console
+            eventSource.addEventListener('console-log', (e) => {
+                const data = JSON.parse(e.data);
+                addConsoleLog(data.level, data.message, data.timestamp);
+            });
+
+            // Escutar tráfego da API
+            eventSource.addEventListener('api-traffic', (e) => {
+                const data = JSON.parse(e.data);
+                addTrafficEntry(data);
+            });
+
+            // Escutar JSON atual (Output)
+            eventSource.addEventListener('current-json', (e) => {
+                const data = JSON.parse(e.data);
+                updateJsonDisplay(data.data);
+            });
+
+            // Escutar JSON Input (dados recebidos do MongoDB)
+            eventSource.addEventListener('current-json-input', (e) => {
+                const data = JSON.parse(e.data);
+                updateJsonInputDisplay(data.data);
+            });
+
+            // Reconexão automática
+            eventSource.onerror = (e) => {
+                statusIndicator.classList.remove('connected');
+                addConsoleLog('error', 'Erro SSE, reconectando...');
+            };
+
+            // Funções auxiliares (manter como estão)
+            function addConsoleLog(level, message, timestamp = new Date()) {
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry log-${level}`;
+                logEntry.innerHTML = `
+                    <span style="color: #888;">[${timestamp}]</span>
+                    <span style="color: #00ff00;">[${level.toUpperCase()}]</span>
+                    ${message}
+                `;
+                consoleLog.appendChild(logEntry);
+                consoleLog.scrollTop = consoleLog.scrollHeight;
+            }
+
+            function addTrafficEntry(data) {
+                const trafficEntry = document.createElement('div');
+                trafficEntry.className = `traffic-entry ${data.status}`;
+                trafficEntry.innerHTML = `
+                    <div class="traffic-time">${data.timestamp}</div>
+                    <div class="traffic-origin">Origem: ${data.origin}</div>
+                    <div class="traffic-status ${data.status}">${data.message}</div>
+                    ${data.details ? `<div style="color: #888; font-size: 10px;">${data.details}</div>` : ''}
+                `;
+                apiTraffic.insertBefore(trafficEntry, apiTraffic.firstChild);
+                
+                // Manter apenas os últimos 50 entries
+                while (apiTraffic.children.length > 50) {
+                    apiTraffic.removeChild(apiTraffic.lastChild);
+                }
+            }
+
+            function updateJsonDisplay(data) {
+                jsonDisplay.textContent = JSON.stringify(data, null, 2);
+            }
+
+            function updateJsonInputDisplay(data) {
+                jsonInputDisplay.textContent = JSON.stringify(data, null, 2);
+            }
+
             // Log inicial
-            addConsoleLog('info', 'Monitor Skynet inicializado');
+            addConsoleLog('info', 'Monitor Skynet inicializado via SSE');
             addConsoleLog('info', 'Aguardando conexões da API...');
         }
     </script>
