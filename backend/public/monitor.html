@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor Skynet v2.1 - Console de Conteúdo VeloHub</title>
+    <title>Monitor Skynet v2.2 - Console de Conteúdo VeloHub</title>
     <link href="https://fonts.googleapis.com/css2?family=Turret+Road:wght@200;300;400;500;700;800&display=swap" rel="stylesheet">
     <style>
         * {
@@ -263,18 +263,18 @@
 
         <!-- JSON Panels Container -->
         <div class="json-container">
-            <!-- JSON Output Panel -->
+            <!-- Outbound JSON Panel -->
             <div class="panel json-panel">
-                <h2>JSON OUTPUT</h2>
+                <h2>OUTBOUND JSON</h2>
                 <button class="clear-btn" onclick="clearJson()">CLEAR</button>
-                <div class="json-display" id="jsonDisplay">Aguardando dados...</div>
+                <div class="json-display" id="jsonDisplay">Aguardando dados do frontend...</div>
             </div>
 
-            <!-- JSON Input Panel -->
+            <!-- Inbound JSON Panel -->
             <div class="panel json-panel">
-                <h2>JSON INPUT</h2>
+                <h2>INBOUND JSON</h2>
                 <button class="clear-btn" onclick="clearJsonInput()">CLEAR</button>
-                <div class="json-display" id="jsonInputDisplay">Aguardando dados do MongoDB...</div>
+                <div class="json-display" id="jsonInputDisplay">Aguardando resposta do backend...</div>
             </div>
         </div>
     </div>
@@ -385,11 +385,11 @@
         }
 
         function clearJson() {
-            jsonDisplay.textContent = 'Aguardando dados...';
+            jsonDisplay.textContent = 'Aguardando dados do frontend...';
         }
 
         function clearJsonInput() {
-            jsonInputDisplay.textContent = 'Aguardando dados do MongoDB...';
+            jsonInputDisplay.textContent = 'Aguardando resposta do backend...';
         }
 
             // Log inicial

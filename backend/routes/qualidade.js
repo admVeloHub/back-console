@@ -1371,7 +1371,7 @@ router.get('/funcoes', async (req, res) => {
     
     global.emitTraffic('Qualidade Funções', 'completed', `Concluído - ${funcoes.length} funções encontradas`);
     global.emitLog('success', `GET /api/qualidade/funcoes - ${funcoes.length} funções retornadas`);
-    global.emitJson(response);
+    global.emitJsonInput(response);
     console.log('🔍 [COMPLIANCE] GET /api/qualidade/funcoes - Response:', response);
     
     res.json(response);
@@ -1426,7 +1426,7 @@ router.post('/funcoes', async (req, res) => {
     
     global.emitTraffic('Qualidade Funções', 'completed', 'Concluído - Função criada com sucesso');
     global.emitLog('success', `POST /api/qualidade/funcoes - Função "${funcaoSalva.funcao}" criada com sucesso`);
-    global.emitJson(response);
+    global.emitJsonInput(response);
     console.log('🔍 [COMPLIANCE] POST /api/qualidade/funcoes - Body:', req.body, 'Response:', response);
     
     res.status(201).json(response);
@@ -1523,7 +1523,7 @@ router.put('/funcoes/:id', async (req, res) => {
     
     global.emitTraffic('Qualidade Funções', 'completed', 'Concluído - Função atualizada com sucesso');
     global.emitLog('success', `PUT /api/qualidade/funcoes/${id} - Função "${funcaoAtualizada.funcao}" atualizada com sucesso`);
-    global.emitJson(response);
+    global.emitJsonInput(response);
     console.log('🔍 [COMPLIANCE] PUT /api/qualidade/funcoes/:id - Body:', req.body, 'Response:', response);
     
     res.json(response);
@@ -1616,7 +1616,7 @@ router.delete('/funcoes/:id', async (req, res) => {
     
     global.emitTraffic('Qualidade Funções', 'completed', 'Concluído - Função deletada com sucesso');
     global.emitLog('success', `DELETE /api/qualidade/funcoes/${id} - Função "${funcaoExistente.funcao}" deletada com sucesso`);
-    global.emitJson(response);
+    global.emitJsonInput(response);
     console.log('🔍 [COMPLIANCE] DELETE /api/qualidade/funcoes/:id - Response:', response);
     
     res.json(response);
@@ -1635,4 +1635,4 @@ router.delete('/funcoes/:id', async (req, res) => {
 
 module.exports = router;
 
-// VERSION: v5.1.0 | DATE: 2024-12-19 | AUTHOR: Lucas Gravina - VeloHub Development Team
+// VERSION: v5.2.0 | DATE: 2024-12-19 | AUTHOR: Lucas Gravina - VeloHub Development Team
