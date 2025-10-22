@@ -1,9 +1,12 @@
-// VERSION: v4.0.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v5.0.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
 const QualidadeFuncionario = require('../models/QualidadeFuncionario');
 const QualidadeAvaliacao = require('../models/QualidadeAvaliacao');
 const QualidadeAvaliacaoGPT = require('../models/QualidadeAvaliacaoGPT');
+const QualidadeAtuacoes = require('../models/QualidadeAtuacoes');
+const QualidadeFuncoes = require('../models/QualidadeFuncoes');
 
 // Middleware de monitoramento
 const logRequest = (req, res, next) => {
@@ -115,6 +118,34 @@ const validateAvaliacao = (req, res, next) => {
     return res.status(400).json({
       success: false,
       message: 'Data da avaliação deve ser uma data válida'
+    });
+  }
+  
+  next();
+};
+
+// Validação de dados obrigatórios para atuações
+const validateAtuacao = (req, res, next) => {
+  const { funcao } = req.body;
+  
+  if (!funcao || funcao.trim() === '') {
+    return res.status(400).json({
+      success: false,
+      message: 'Nome da atuação é obrigatório'
+    });
+  }
+  
+  next();
+};
+
+// Validação de dados obrigatórios para funções
+const validateFuncao = (req, res, next) => {
+  const { funcao } = req.body;
+  
+  if (!funcao || funcao.trim() === '') {
+    return res.status(400).json({
+      success: false,
+      message: 'Nome da função é obrigatório'
     });
   }
   
@@ -1147,6 +1178,409 @@ router.delete('/avaliacoes-gpt/:id', async (req, res) => {
       success: false,
       message: 'Erro interno do servidor ao deletar avaliação GPT'
     });
+  }
+});
+
+// ========================================
+// ENDPOINTS PARA ATUAÇÕES
+// ========================================
+
+// POST /api/qualidade/atuacoes - Criar nova atuação
+router.post('/atuacoes', validateAtuacao, async (req, res) => {
+  try {
+    global.emitTraffic('Qualidade Atuações', 'received', 'Entrada recebida - POST /api/qualidade/atuacoes');
+    global.emitLog('info', 'POST /api/qualidade/atuacoes - Criando nova atuação');
+    global.emitJson(req.body);
+    
+    const atuacaoData = { ...req.body };
+    
+    global.emitTraffic('Qualidade Atuações', 'processing', 'Transmitindo para DB');
+    const novaAtuacao = new QualidadeAtuacoes(atuacaoData);
+    const atuacaoSalva = await novaAtuacao.save();
+    
+    global.emitTraffic('Qualidade Atuações', 'completed', 'Concluído - Atuação criada com sucesso');
+    global.emitLog('success', `POST /api/qualidade/atuacoes - Atuação "${atuacaoSalva.funcao}" criada com sucesso`);
+    global.emitJson(atuacaoSalva);
+    
+    res.status(201).json({
+      success: true,
+      data: atuacaoSalva,
+      message: 'Atuação criada com sucesso'
+    });
+  } catch (error) {
+    global.emitTraffic('Qualidade Atuações', 'error', `Erro: ${error.message}`);
+    global.emitLog('error', `POST /api/qualidade/atuacoes - Erro: ${error.message}`);
+    console.error('[QUALIDADE-ATUACOES] Erro ao criar atuação:', error);
+    
+    // Verificar se é erro de duplicação
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: 'Atuação com este nome já existe'
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor ao criar atuação'
+    });
+  }
+});
+
+// GET /api/qualidade/atuacoes - Listar todas as atuações
+router.get('/atuacoes', async (req, res) => {
+  try {
+    global.emitTraffic('Qualidade Atuações', 'received', 'Entrada recebida - GET /api/qualidade/atuacoes');
+    global.emitLog('info', 'GET /api/qualidade/atuacoes - Listando atuações');
+    
+    global.emitTraffic('Qualidade Atuações', 'processing', 'Consultando DB');
+    const atuacoes = await QualidadeAtuacoes.find({}).sort({ funcao: 1 });
+    
+    global.emitTraffic('Qualidade Atuações', 'completed', `Concluído - ${atuacoes.length} atuações encontradas`);
+    global.emitLog('success', `GET /api/qualidade/atuacoes - ${atuacoes.length} atuações retornadas`);
+    global.emitJson(atuacoes);
+    
+    res.json({
+      success: true,
+      data: atuacoes,
+      message: `${atuacoes.length} atuações encontradas`
+    });
+  } catch (error) {
+    global.emitTraffic('Qualidade Atuações', 'error', `Erro: ${error.message}`);
+    global.emitLog('error', `GET /api/qualidade/atuacoes - Erro: ${error.message}`);
+    console.error('[QUALIDADE-ATUACOES] Erro ao listar atuações:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor ao listar atuações'
+    });
+  }
+});
+
+// PUT /api/qualidade/atuacoes/:id - Atualizar atuação existente
+router.put('/atuacoes/:id', validateAtuacao, async (req, res) => {
+  try {
+    const { id } = req.params;
+    global.emitTraffic('Qualidade Atuações', 'received', `Entrada recebida - PUT /api/qualidade/atuacoes/${id}`);
+    global.emitLog('info', `PUT /api/qualidade/atuacoes/${id} - Atualizando atuação`);
+    global.emitJson(req.body);
+    
+    // Verificar se atuação existe
+    const atuacaoExistente = await QualidadeAtuacoes.findById(id);
+    if (!atuacaoExistente) {
+      return res.status(404).json({
+        success: false,
+        message: 'Atuação não encontrada'
+      });
+    }
+    
+    const updateData = { ...req.body };
+    
+    global.emitTraffic('Qualidade Atuações', 'processing', 'Atualizando no DB');
+    const atuacaoAtualizada = await QualidadeAtuacoes.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+    
+    global.emitTraffic('Qualidade Atuações', 'completed', 'Concluído - Atuação atualizada com sucesso');
+    global.emitLog('success', `PUT /api/qualidade/atuacoes/${id} - Atuação "${atuacaoAtualizada.funcao}" atualizada com sucesso`);
+    global.emitJson(atuacaoAtualizada);
+    
+    res.json({
+      success: true,
+      data: atuacaoAtualizada,
+      message: 'Atuação atualizada com sucesso'
+    });
+  } catch (error) {
+    global.emitTraffic('Qualidade Atuações', 'error', `Erro: ${error.message}`);
+    global.emitLog('error', `PUT /api/qualidade/atuacoes/${id} - Erro: ${error.message}`);
+    console.error('[QUALIDADE-ATUACOES] Erro ao atualizar atuação:', error);
+    
+    // Verificar se é erro de duplicação
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: 'Atuação com este nome já existe'
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor ao atualizar atuação'
+    });
+  }
+});
+
+// DELETE /api/qualidade/atuacoes/:id - Deletar atuação
+router.delete('/atuacoes/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    global.emitTraffic('Qualidade Atuações', 'received', `Entrada recebida - DELETE /api/qualidade/atuacoes/${id}`);
+    global.emitLog('info', `DELETE /api/qualidade/atuacoes/${id} - Deletando atuação`);
+    
+    // Verificar se atuação existe
+    const atuacaoExistente = await QualidadeAtuacoes.findById(id);
+    if (!atuacaoExistente) {
+      return res.status(404).json({
+        success: false,
+        message: 'Atuação não encontrada'
+      });
+    }
+    
+    global.emitTraffic('Qualidade Atuações', 'processing', 'Deletando do DB');
+    await QualidadeAtuacoes.findByIdAndDelete(id);
+    
+    global.emitTraffic('Qualidade Atuações', 'completed', 'Concluído - Atuação deletada com sucesso');
+    global.emitLog('success', `DELETE /api/qualidade/atuacoes/${id} - Atuação "${atuacaoExistente.funcao}" deletada com sucesso`);
+    
+    res.json({
+      success: true,
+      message: 'Atuação deletada com sucesso'
+    });
+  } catch (error) {
+    global.emitTraffic('Qualidade Atuações', 'error', `Erro: ${error.message}`);
+    global.emitLog('error', `DELETE /api/qualidade/atuacoes/${id} - Erro: ${error.message}`);
+    console.error('[QUALIDADE-ATUACOES] Erro ao deletar atuação:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor ao deletar atuação'
+    });
+  }
+});
+
+// ========================================
+// ENDPOINTS PARA FUNÇÕES - COMPLIANCE OBRIGATÓRIO
+// ========================================
+
+// GET /api/qualidade/funcoes - Listar todas as funções cadastradas
+router.get('/funcoes', async (req, res) => {
+  try {
+    console.log('🔍 [COMPLIANCE] GET /api/qualidade/funcoes - Iniciando listagem');
+    
+    // Buscar todas as funções ordenadas por createdAt DESC
+    const funcoes = await QualidadeFuncoes.find({}).sort({ createdAt: -1 });
+    
+    const response = {
+      success: true,
+      data: funcoes,
+      count: funcoes.length
+    };
+    
+    console.log('🔍 [COMPLIANCE] GET /api/qualidade/funcoes - Response:', response);
+    
+    res.json(response);
+  } catch (error) {
+    console.error('[QUALIDADE-FUNCOES] Erro ao listar funções:', error);
+    const response = {
+      success: false,
+      error: 'Erro interno do servidor ao listar funções'
+    };
+    console.log('🔍 [COMPLIANCE] GET /api/qualidade/funcoes - Error Response:', response);
+    res.status(500).json(response);
+  }
+});
+
+// POST /api/qualidade/funcoes - Criar nova função
+router.post('/funcoes', async (req, res) => {
+  try {
+    const { funcao, descricao } = req.body;
+    
+    console.log('🔍 [COMPLIANCE] POST /api/qualidade/funcoes - Body:', req.body);
+    
+    // Validação obrigatória: funcao não vazio
+    if (!funcao || funcao.trim() === '') {
+      const response = {
+        success: false,
+        error: 'Nome da função é obrigatório'
+      };
+      console.log('🔍 [COMPLIANCE] POST /api/qualidade/funcoes - Validation Error Response:', response);
+      return res.status(400).json(response);
+    }
+    
+    // Criar nova função
+    const novaFuncao = new QualidadeFuncoes({
+      funcao: funcao.trim(),
+      descricao: descricao ? descricao.trim() : ''
+    });
+    
+    const funcaoSalva = await novaFuncao.save();
+    
+    const response = {
+      success: true,
+      data: funcaoSalva
+    };
+    
+    console.log('🔍 [COMPLIANCE] POST /api/qualidade/funcoes - Body:', req.body, 'Response:', response);
+    
+    res.status(201).json(response);
+  } catch (error) {
+    console.error('[QUALIDADE-FUNCOES] Erro ao criar função:', error);
+    
+    // Verificar se é erro de duplicação
+    if (error.code === 11000) {
+      const response = {
+        success: false,
+        error: 'Função já existe'
+      };
+      console.log('🔍 [COMPLIANCE] POST /api/qualidade/funcoes - Duplication Error Response:', response);
+      return res.status(409).json(response);
+    }
+    
+    const response = {
+      success: false,
+      error: 'Erro interno do servidor ao criar função'
+    };
+    console.log('🔍 [COMPLIANCE] POST /api/qualidade/funcoes - Error Response:', response);
+    res.status(500).json(response);
+  }
+});
+
+// PUT /api/qualidade/funcoes/:id - Atualizar função existente
+router.put('/funcoes/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { funcao, descricao } = req.body;
+    
+    console.log('🔍 [COMPLIANCE] PUT /api/qualidade/funcoes/:id - Body:', req.body);
+    
+    // Validar ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      const response = {
+        success: false,
+        error: 'ID inválido'
+      };
+      console.log('🔍 [COMPLIANCE] PUT /api/qualidade/funcoes/:id - Invalid ID Response:', response);
+      return res.status(400).json(response);
+    }
+    
+    // Validação obrigatória: funcao não vazio
+    if (!funcao || funcao.trim() === '') {
+      const response = {
+        success: false,
+        error: 'Nome da função é obrigatório'
+      };
+      console.log('🔍 [COMPLIANCE] PUT /api/qualidade/funcoes/:id - Validation Error Response:', response);
+      return res.status(400).json(response);
+    }
+    
+    // Verificar se função existe
+    const funcaoExistente = await QualidadeFuncoes.findById(id);
+    if (!funcaoExistente) {
+      const response = {
+        success: false,
+        error: 'Função não encontrada'
+      };
+      console.log('🔍 [COMPLIANCE] PUT /api/qualidade/funcoes/:id - Not Found Response:', response);
+      return res.status(404).json(response);
+    }
+    
+    // Atualizar função
+    const updateData = {
+      funcao: funcao.trim(),
+      descricao: descricao ? descricao.trim() : '',
+      updatedAt: new Date()
+    };
+    
+    const funcaoAtualizada = await QualidadeFuncoes.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+    
+    const response = {
+      success: true,
+      data: funcaoAtualizada
+    };
+    
+    console.log('🔍 [COMPLIANCE] PUT /api/qualidade/funcoes/:id - Body:', req.body, 'Response:', response);
+    
+    res.json(response);
+  } catch (error) {
+    console.error('[QUALIDADE-FUNCOES] Erro ao atualizar função:', error);
+    
+    // Verificar se é erro de duplicação
+    if (error.code === 11000) {
+      const response = {
+        success: false,
+        error: 'Função já existe'
+      };
+      console.log('🔍 [COMPLIANCE] PUT /api/qualidade/funcoes/:id - Duplication Error Response:', response);
+      return res.status(409).json(response);
+    }
+    
+    const response = {
+      success: false,
+      error: 'Erro interno do servidor ao atualizar função'
+    };
+    console.log('🔍 [COMPLIANCE] PUT /api/qualidade/funcoes/:id - Error Response:', response);
+    res.status(500).json(response);
+  }
+});
+
+// DELETE /api/qualidade/funcoes/:id - Deletar função
+router.delete('/funcoes/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    console.log('🔍 [COMPLIANCE] DELETE /api/qualidade/funcoes/:id - Iniciando deleção');
+    
+    // Validar ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      const response = {
+        success: false,
+        error: 'ID inválido'
+      };
+      console.log('🔍 [COMPLIANCE] DELETE /api/qualidade/funcoes/:id - Invalid ID Response:', response);
+      return res.status(400).json(response);
+    }
+    
+    // Verificar se função existe
+    const funcaoExistente = await QualidadeFuncoes.findById(id);
+    if (!funcaoExistente) {
+      const response = {
+        success: false,
+        error: 'Função não encontrada'
+      };
+      console.log('🔍 [COMPLIANCE] DELETE /api/qualidade/funcoes/:id - Not Found Response:', response);
+      return res.status(404).json(response);
+    }
+    
+    // Verificar se há funcionários usando esta função
+    const funcionariosUsandoFuncao = await QualidadeFuncionario.find({
+      $or: [
+        { atuacao: funcaoExistente.funcao }, // Dados antigos (string)
+        { atuacao: { $in: [id] } } // Dados novos (array de ObjectIds)
+      ]
+    });
+    
+    if (funcionariosUsandoFuncao.length > 0) {
+      const response = {
+        success: false,
+        error: 'Função está em uso por funcionários. Não é possível deletar.'
+      };
+      console.log('🔍 [COMPLIANCE] DELETE /api/qualidade/funcoes/:id - In Use Error Response:', response);
+      return res.status(409).json(response);
+    }
+    
+    // Deletar função
+    await QualidadeFuncoes.findByIdAndDelete(id);
+    
+    const response = {
+      success: true,
+      message: 'Função deletada com sucesso'
+    };
+    
+    console.log('🔍 [COMPLIANCE] DELETE /api/qualidade/funcoes/:id - Response:', response);
+    
+    res.json(response);
+  } catch (error) {
+    console.error('[QUALIDADE-FUNCOES] Erro ao deletar função:', error);
+    const response = {
+      success: false,
+      error: 'Erro interno do servidor ao deletar função'
+    };
+    console.log('🔍 [COMPLIANCE] DELETE /api/qualidade/funcoes/:id - Error Response:', response);
+    res.status(500).json(response);
   }
 });
 

@@ -55,9 +55,19 @@ const qualidadeFuncionarioSchema = new mongoose.Schema({
     trim: true
   },
   atuacao: {
-    type: String,
+    type: mongoose.Schema.Types.Mixed, // Suporta String (antigo) e Array de ObjectIds (novo)
     default: '',
-    trim: true
+    validate: {
+      validator: function(v) {
+        // Aceita string vazia, string não vazia, ou array de ObjectIds
+        if (typeof v === 'string') return true;
+        if (Array.isArray(v)) {
+          return v.every(id => mongoose.Types.ObjectId.isValid(id));
+        }
+        return false;
+      },
+      message: 'Atuação deve ser uma string ou array de ObjectIds válidos'
+    }
   },
   escala: {
     type: String,
