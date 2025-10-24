@@ -115,4 +115,4 @@ qualidadeAvaliacaoGPTSchema.index({ createdAt: -1 });
 
 module.exports = analisesConnection.model('QualidadeAvaliacaoGPT', qualidadeAvaliacaoGPTSchema, 'qualidade_avaliacoes_gpt');
 
-// VERSION: v1.2.0 | DATE: 2024-12-19 | AUTHOR: Lucas Gravina - VeloHub Development Team
+// VERSION: v1.3.0 | DATE: 2024-12-19 | AUTHOR: Lucas Gravina - VeloHub Development Team

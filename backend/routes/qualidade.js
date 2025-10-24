@@ -1,4 +1,4 @@
-// VERSION: v5.2.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v5.3.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
@@ -143,7 +143,7 @@ const validateFuncionario = (req, res, next) => {
 
 // Validação de dados obrigatórios para avaliações
 const validateAvaliacao = (req, res, next) => {
-  const { colaboradorNome, avaliador, mes, ano, dataAvaliacao } = req.body;
+  const { colaboradorNome, avaliador, mes, ano, dataAvaliacao, observacoes, dataLigacao, clarezaObjetividade, dominioAssunto } = req.body;
   
   if (!colaboradorNome || colaboradorNome.trim() === '') {
     return res.status(400).json({
@@ -195,6 +195,47 @@ const validateAvaliacao = (req, res, next) => {
     return res.status(400).json({
       success: false,
       message: 'Data da avaliação deve ser uma data válida'
+    });
+  }
+  
+  // Validar observações (obrigatório)
+  if (!observacoes || observacoes.trim() === '') {
+    return res.status(400).json({
+      success: false,
+      message: 'Observações são obrigatórias'
+    });
+  }
+  
+  // Validar dataLigacao (obrigatório)
+  if (!dataLigacao) {
+    return res.status(400).json({
+      success: false,
+      message: 'Data da ligação é obrigatória'
+    });
+  }
+  
+  // Validar se dataLigacao é uma data válida
+  const dataLigacaoDate = new Date(dataLigacao);
+  if (isNaN(dataLigacaoDate.getTime())) {
+    return res.status(400).json({
+      success: false,
+      message: 'Data da ligação deve ser uma data válida'
+    });
+  }
+  
+  // Validar clarezaObjetividade (obrigatório, Boolean)
+  if (clarezaObjetividade === undefined || clarezaObjetividade === null || typeof clarezaObjetividade !== 'boolean') {
+    return res.status(400).json({
+      success: false,
+      message: 'Clareza e Objetividade é obrigatório e deve ser um valor booleano'
+    });
+  }
+  
+  // Validar dominioAssunto (obrigatório, Boolean)
+  if (dominioAssunto === undefined || dominioAssunto === null || typeof dominioAssunto !== 'boolean') {
+    return res.status(400).json({
+      success: false,
+      message: 'Domínio no Assunto é obrigatório e deve ser um valor booleano'
     });
   }
   

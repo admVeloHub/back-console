@@ -1,5 +1,5 @@
 listagem de schema de coleções do mongoDB
-   <!-- VERSION: v1.12.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team -->
+   <!-- VERSION: v1.8.2 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team -->
    
      🗄️ Database Principal: console_conteudo
    
@@ -173,23 +173,25 @@ listagem de schema de coleções do mongoDB
    9. schema console_analises.qualidade_avaliacoes
    {
    _id: ObjectId,
-   colaboradorNome: String,        // Nome do colaborador
-   avaliador: String,              // Avaliador
-   mes: String,                    // Mês da avaliação
-   ano: Number,                    // Ano da avaliação
-   dataAvaliacao: Date,            // Data da avaliação
-   arquivoLigacao: String,         // Base64 ou URL
-   nomeArquivo: String,            // Nome do arquivo
-   saudacaoAdequada: Boolean,      // Critério de avaliação
-   escutaAtiva: Boolean,           // Critério de avaliação
-   resolucaoQuestao: Boolean,      // Critério de avaliação
-   empatiaCordialidade: Boolean,   // Critério de avaliação
-   direcionouPesquisa: Boolean,    // Critério de avaliação
-   procedimentoIncorreto: Boolean, // Critério de avaliação
-   encerramentoBrusco: Boolean,    // Critério de avaliação
-   moderado: Boolean,              // Se foi moderado
-   observacoesModeracao: String,   // Observações da moderação
-   pontuacaoTotal: Number,         // Pontuação total
+   colaboradorNome: String,        // Nome do colaborador (OBRIGATÓRIO)
+   avaliador: String,              // Avaliador (OBRIGATÓRIO)
+   mes: String,                    // Mês da avaliação (OBRIGATÓRIO)
+   ano: Number,                    // Ano da avaliação (OBRIGATÓRIO)
+   dataAvaliacao: Date,            // Data da avaliação (OBRIGATÓRIO)
+   arquivoLigacao: String,         // Base64 ou URL (opcional)
+   nomeArquivo: String,            // Nome do arquivo (opcional)
+   saudacaoAdequada: Boolean,      // Critério de avaliação (+10 pontos)
+   escutaAtiva: Boolean,           // Critério de avaliação (+15 pontos)
+   clarezaObjetividade: Boolean,   // Critério de avaliação (+10 pontos) - NOVO
+   resolucaoQuestao: Boolean,      // Critério de avaliação (+25 pontos)
+   dominioAssunto: Boolean,        // Critério de avaliação (+15 pontos) - NOVO
+   empatiaCordialidade: Boolean,   // Critério de avaliação (+15 pontos)
+   direcionouPesquisa: Boolean,    // Critério de avaliação (+10 pontos)
+   procedimentoIncorreto: Boolean, // Critério de avaliação (-60 pontos)
+   encerramentoBrusco: Boolean,    // Critério de avaliação (-100 pontos)
+   observacoes: String,            // Observações (OBRIGATÓRIO)
+   dataLigacao: Date,              // Data da ligação (OBRIGATÓRIO)
+   pontuacaoTotal: Number,         // Pontuação total (calculada automaticamente)
    createdAt: Date,                // Data de criação
    updatedAt: Date,                // Data de atualização
    }
@@ -227,7 +229,9 @@ listagem de schema de coleções do mongoDB
    criteriosGPT: {                 // Critérios avaliados pelo GPT
      saudacaoAdequada: Boolean,
      escutaAtiva: Boolean,
+     clarezaObjetividade: Boolean,  // NOVO critério
      resolucaoQuestao: Boolean,
+     dominioAssunto: Boolean,       // NOVO critério
      empatiaCordialidade: Boolean,
      direcionouPesquisa: Boolean,
      procedimentoIncorreto: Boolean,
@@ -240,14 +244,14 @@ listagem de schema de coleções do mongoDB
    updatedAt: Date                 // Data de atualização (padronizado)
    }
    
-//schema console_analises.qualidade_funcoes
-{
-_id: ObjectId,
-funcao: String,              // Nome da função (ex: "Analista", "Supervisor") - OBRIGATÓRIO E ÚNICO
-descricao: String,           // Descrição opcional da função
-createdAt: Date,             // Data de criação (automática)
-updatedAt: Date              // Data de atualização (automática)
-}
+   //schema console_analises.qualidade_funcoes
+   {
+   _id: ObjectId,
+   funcao: String,              // Nome da função (ex: "Atendimento", "Suporte Técnico")
+   descricao: String,           // Descrição opcional da função
+   createdAt: Date,             // Data de criação
+   updatedAt: Date              // Data de atualização
+   }
    
    //schema console_config.faq_bot
    // 
