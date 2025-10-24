@@ -4,6 +4,46 @@
 
 **Data/Hora:** 2024-12-19 23:59:00  
 **Tipo:** GitHub Push  
+**Versão:** v1.14.0  
+**Repositório:** admVeloHub/back-console  
+**Branch:** master  
+
+### Arquivos Modificados:
+- `backend/models/QualidadeAvaliacao.js` (v1.2.0)
+- `backend/models/QualidadeAvaliacaoGPT.js` (v1.2.0)
+- `backend/routes/qualidade.js` (v5.1.0)
+
+### Descrição:
+Implementação dos novos critérios de avaliação no módulo de qualidade conforme especificação. Ajustes nas pontuações e adição de 2 novos critérios: "Clareza e Objetividade" e "Domínio no assunto abordado".
+
+### Mudanças Implementadas:
+- ✅ Novos campos no schema: `clarezaObjetividade` e `dominioAssunto`
+- ✅ Ajuste de pontuações: Escuta Ativa (25→15), Resolução Questão (40→25)
+- ✅ Novos critérios: Clareza e Objetividade (+10), Domínio no assunto (+15)
+- ✅ Função `calcularPontuacao()` centralizada
+- ✅ Compatibilidade retroativa garantida
+- ✅ Documentação para atualização do serviço GPT externo
+
+### Critérios Atualizados:
+| Critério | Pontuação Anterior | Pontuação Nova |
+|----------|-------------------|----------------|
+| Escuta Ativa / Sondagem | +25 | +15 |
+| Resolução Questão | +40 | +25 |
+| Clareza e Objetividade | - | +10 (NOVO) |
+| Domínio no assunto | - | +15 (NOVO) |
+
+### Problemas Resolvidos:
+- ✅ Compatibilidade retroativa com avaliações antigas
+- ✅ Cálculo de pontuação atualizado
+- ✅ Schemas MongoDB atualizados
+- ✅ Documentação para serviço GPT externo
+
+---
+
+## GitHub Push - 2024-12-19
+
+**Data/Hora:** 2024-12-19 23:59:00  
+**Tipo:** GitHub Push  
 **Versão:** v1.13.0  
 **Repositório:** admVeloHub/back-console  
 **Branch:** master  
@@ -28,6 +68,29 @@ Implementação de Server-Sent Events (SSE) para substituir Socket.IO e resolver
 - ❌ Erro 400 Bad Request do Socket.IO no Vercel
 - ❌ Limitações de WebSocket em ambiente serverless
 - ✅ Monitor funcionando perfeitamente em produção
+
+---
+
+## GitHub Push - 2024-12-19
+
+**Data/Hora:** 2024-12-19 23:59:00  
+**Tipo:** GitHub Push  
+**Versão:** v1.13.1  
+**Repositório:** admVeloHub/back-console  
+**Branch:** master  
+
+### Arquivos Modificados:
+- `package.json` (uuid@8.3.2)
+- `package-lock.json` (dependências atualizadas)
+
+### Descrição:
+Correção do erro ERR_REQUIRE_ESM do uuid no Vercel. A versão uuid@9.x é um módulo ES que não é compatível com CommonJS. Substituída por uuid@8.3.2 que funciona perfeitamente com require().
+
+### Problemas Resolvidos:
+- ❌ Erro ERR_REQUIRE_ESM: require() of ES Module not supported
+- ❌ Falha na inicialização do servidor no Vercel
+- ✅ Servidor funcionando perfeitamente em produção
+- ✅ SSE implementado e funcionando
 
 ---
 

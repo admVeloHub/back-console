@@ -1,4 +1,4 @@
-// VERSION: v5.0.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
+// VERSION: v5.2.0 | DATE: 2024-12-19 | AUTHOR: VeloHub Development Team
 const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
@@ -7,6 +7,83 @@ const QualidadeAvaliacao = require('../models/QualidadeAvaliacao');
 const QualidadeAvaliacaoGPT = require('../models/QualidadeAvaliacaoGPT');
 const QualidadeAtuacoes = require('../models/QualidadeAtuacoes');
 const QualidadeFuncoes = require('../models/QualidadeFuncoes');
+
+// Função para calcular pontuação com novos critérios
+const calcularPontuacao = (avaliacaoData) => {
+  let pontuacaoTotal = 0;
+  
+  // Critérios positivos
+  if (avaliacaoData.saudacaoAdequada) pontuacaoTotal += 10;
+  if (avaliacaoData.escutaAtiva) pontuacaoTotal += 15; // Reduzido de 25 para 15
+  if (avaliacaoData.clarezaObjetividade) pontuacaoTotal += 10; // NOVO
+  if (avaliacaoData.resolucaoQuestao) pontuacaoTotal += 25; // Reduzido de 40 para 25
+  if (avaliacaoData.dominioAssunto) pontuacaoTotal += 15; // NOVO
+  if (avaliacaoData.empatiaCordialidade) pontuacaoTotal += 15;
+  if (avaliacaoData.direcionouPesquisa) pontuacaoTotal += 10;
+  
+  // Critérios negativos
+  if (avaliacaoData.procedimentoIncorreto) pontuacaoTotal -= 60;
+  if (avaliacaoData.encerramentoBrusco) pontuacaoTotal -= 100;
+  
+  // Garantir que a pontuação não seja negativa
+  pontuacaoTotal = Math.max(0, pontuacaoTotal);
+  
+  return pontuacaoTotal;
+};
+
+// Função para calcular pontuação GPT com novos critérios (para compatibilidade)
+const calcularPontuacaoGPT = (criteriosGPT) => {
+  let pontuacaoTotal = 0;
+  
+  // Critérios positivos
+  if (criteriosGPT.saudacaoAdequada) pontuacaoTotal += 10;
+  if (criteriosGPT.escutaAtiva) pontuacaoTotal += 15; // Reduzido de 25 para 15
+  if (criteriosGPT.clarezaObjetividade) pontuacaoTotal += 10; // NOVO
+  if (criteriosGPT.resolucaoQuestao) pontuacaoTotal += 25; // Reduzido de 40 para 25
+  if (criteriosGPT.dominioAssunto) pontuacaoTotal += 15; // NOVO
+  if (criteriosGPT.empatiaCordialidade) pontuacaoTotal += 15;
+  if (criteriosGPT.direcionouPesquisa) pontuacaoTotal += 10;
+  
+  // Critérios negativos
+  if (criteriosGPT.procedimentoIncorreto) pontuacaoTotal -= 60;
+  if (criteriosGPT.encerramentoBrusco) pontuacaoTotal -= 100;
+  
+  // Garantir que a pontuação não seja negativa
+  pontuacaoTotal = Math.max(0, pontuacaoTotal);
+  
+  return pontuacaoTotal;
+};
+
+/*
+ * PROMPT ATUALIZADO PARA ANÁLISE GPT DE QUALIDADE:
+ * 
+ * Analise a ligação considerando os seguintes critérios de avaliação:
+ * 
+ * CRITÉRIOS POSITIVOS:
+ * 1. Saudação Adequada - O colaborador cumprimentou adequadamente o cliente? (+10 pontos)
+ * 2. Escuta Ativa / Sondagem - O colaborador demonstrou escuta ativa e fez perguntas relevantes? (+15 pontos)
+ * 3. Clareza e Objetividade - O colaborador foi claro e objetivo na comunicação? (+10 pontos) [NOVO]
+ * 4. Resolução Questão / Seguiu o procedimento - A questão foi resolvida seguindo os procedimentos corretos? (+25 pontos)
+ * 5. Domínio no assunto abordado - O colaborador demonstrou conhecimento sobre o assunto? (+15 pontos) [NOVO]
+ * 6. Empatia / Cordialidade - O colaborador demonstrou empatia e cordialidade? (+15 pontos)
+ * 7. Direcionou para pesquisa de satisfação - O colaborador direcionou o cliente para pesquisa de satisfação? (+10 pontos)
+ * 
+ * CRITÉRIOS NEGATIVOS:
+ * 8. Colaborador repassou um procedimento incorreto - Houve repasse de informação incorreta? (-60 pontos)
+ * 9. Colaborador encerrou o contato de forma brusca - O contato foi encerrado abruptamente? (-100 pontos)
+ * 
+ * PONTUAÇÃO:
+ * - Máxima: 100 pontos (todos os critérios positivos atendidos)
+ * - Mínima: 0 pontos (critérios negativos aplicados)
+ * 
+ * RETORNE:
+ * - Análise detalhada da ligação
+ * - Pontuação de 0 a 100
+ * - Critérios atendidos (true/false para cada um)
+ * - Nível de confiança (0-100%)
+ * - Palavras-chave críticas identificadas
+ * - Cálculo detalhado da pontuação
+ */
 
 // Middleware de monitoramento
 const logRequest = (req, res, next) => {
@@ -480,24 +557,8 @@ router.post('/avaliacoes', validateAvaliacao, async (req, res) => {
       avaliacaoData.ano = parseInt(avaliacaoData.ano, 10);
     }
     
-    // Calcular pontuação total automaticamente
-    let pontuacaoTotal = 0;
-    
-    // Critérios positivos
-    if (avaliacaoData.saudacaoAdequada) pontuacaoTotal += 10;
-    if (avaliacaoData.escutaAtiva) pontuacaoTotal += 25;
-    if (avaliacaoData.resolucaoQuestao) pontuacaoTotal += 40;
-    if (avaliacaoData.empatiaCordialidade) pontuacaoTotal += 15;
-    if (avaliacaoData.direcionouPesquisa) pontuacaoTotal += 10;
-    
-    // Critérios negativos
-    if (avaliacaoData.procedimentoIncorreto) pontuacaoTotal -= 60;
-    if (avaliacaoData.encerramentoBrusco) pontuacaoTotal -= 100;
-    
-    // Garantir que a pontuação não seja negativa
-    pontuacaoTotal = Math.max(0, pontuacaoTotal);
-    
-    avaliacaoData.pontuacaoTotal = pontuacaoTotal;
+    // Calcular pontuação total usando nova função
+    avaliacaoData.pontuacaoTotal = calcularPontuacao(avaliacaoData);
     
     global.emitTraffic('Qualidade Avaliações', 'processing', 'Transmitindo para DB');
     const novaAvaliacao = new QualidadeAvaliacao(avaliacaoData);
@@ -550,24 +611,8 @@ router.put('/avaliacoes/:id', validateAvaliacao, async (req, res) => {
       updateData.ano = parseInt(updateData.ano, 10);
     }
     
-    // Calcular pontuação total automaticamente
-    let pontuacaoTotal = 0;
-    
-    // Critérios positivos
-    if (updateData.saudacaoAdequada) pontuacaoTotal += 10;
-    if (updateData.escutaAtiva) pontuacaoTotal += 25;
-    if (updateData.resolucaoQuestao) pontuacaoTotal += 40;
-    if (updateData.empatiaCordialidade) pontuacaoTotal += 15;
-    if (updateData.direcionouPesquisa) pontuacaoTotal += 10;
-    
-    // Critérios negativos
-    if (updateData.procedimentoIncorreto) pontuacaoTotal -= 60;
-    if (updateData.encerramentoBrusco) pontuacaoTotal -= 100;
-    
-    // Garantir que a pontuação não seja negativa
-    pontuacaoTotal = Math.max(0, pontuacaoTotal);
-    
-    updateData.pontuacaoTotal = pontuacaoTotal;
+    // Calcular pontuação total usando nova função
+    updateData.pontuacaoTotal = calcularPontuacao(updateData);
     
     const avaliacaoAtualizada = await QualidadeAvaliacao.findByIdAndUpdate(
       id,

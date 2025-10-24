@@ -72,6 +72,14 @@ const qualidadeAvaliacaoSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  clarezaObjetividade: {
+    type: Boolean,
+    default: false
+  },
+  dominioAssunto: {
+    type: Boolean,
+    default: false
+  },
   moderado: {
     type: Boolean,
     default: false
@@ -116,4 +124,4 @@ qualidadeAvaliacaoSchema.index({ createdAt: -1 });
 
 module.exports = analisesConnection.model('QualidadeAvaliacao', qualidadeAvaliacaoSchema, 'qualidade_avaliacoes');
 
-// VERSION: v1.1.0 | DATE: 2024-12-19 | AUTHOR: Lucas Gravina - VeloHub Development Team
+// VERSION: v1.2.0 | DATE: 2024-12-19 | AUTHOR: Lucas Gravina - VeloHub Development Team

@@ -38,6 +38,14 @@ const criteriosGPTSchema = new mongoose.Schema({
   encerramentoBrusco: {
     type: Boolean,
     default: false
+  },
+  clarezaObjetividade: {
+    type: Boolean,
+    default: false
+  },
+  dominioAssunto: {
+    type: Boolean,
+    default: false
   }
 }, { _id: false });
 
@@ -107,4 +115,4 @@ qualidadeAvaliacaoGPTSchema.index({ createdAt: -1 });
 
 module.exports = analisesConnection.model('QualidadeAvaliacaoGPT', qualidadeAvaliacaoGPTSchema, 'qualidade_avaliacoes_gpt');
 
-// VERSION: v1.1.0 | DATE: 2024-12-19 | AUTHOR: Lucas Gravina - VeloHub Development Team
+// VERSION: v1.2.0 | DATE: 2024-12-19 | AUTHOR: Lucas Gravina - VeloHub Development Team
