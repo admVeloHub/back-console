@@ -26,7 +26,7 @@ Modificação de validações para permitir módulos e temas sem aulas:
 - ✅ Permite atualizar curso removendo todas as seções de um módulo
 - ✅ Mantém validação de pelo menos 1 módulo por curso
 
-### Commit Hash: [PENDENTE]  
+### Commit Hash: 71779e6  
 ### Status: ✅ Sucesso
 
 ---
