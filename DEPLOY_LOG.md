@@ -2,6 +2,42 @@
 
 ## GitHub Push - 2025-01-30
 
+**Data/Hora:** 2025-01-30 20:30:00  
+**Tipo:** GitHub Push  
+**Versão:** v2.5.0 (ModuleStatus), v2.9.0 (moduleStatus routes)  
+**Repositório:** admVeloHub/back-console  
+**Branch:** master  
+
+### Descrição:
+Atualização do schema module_status para separar módulos de seguro:
+- Substituído campo único `_seguro` por dois campos separados
+- Adicionado `_seguroCred` (Status do Módulo Seguro Prestamista)
+- Adicionado `_seguroCel` (Status do Módulo Seguro Celular)
+- Atualizados mapeamentos frontend ↔ backend
+- Atualizados índices do MongoDB
+
+### Arquivos Modificados:
+- `backend/models/ModuleStatus.js` (v2.4.0 → v2.5.0) - Schema atualizado com _seguroCred e _seguroCel
+- `backend/routes/moduleStatus.js` (v2.8.3 → v2.9.0) - Rotas atualizadas com novos mapeamentos
+
+### Funcionalidades:
+- ✅ GET retorna `seguro-prestamista` e `seguro-celular` separadamente
+- ✅ POST aceita atualização de ambos os módulos de seguro
+- ✅ PUT suporta atualização múltipla dos novos campos
+- ✅ Validações atualizadas para os novos campos
+- ✅ Compatibilidade mantida com formato antigo (formato schema e frontend)
+
+### Mapeamento Frontend:
+- `seguro-prestamista` → `_seguroCred`
+- `seguro-celular` → `_seguroCel`
+
+### Commit Hash: [PENDENTE]  
+### Status: ✅ Sucesso
+
+---
+
+## GitHub Push - 2025-01-30
+
 **Data/Hora:** 2025-01-30 20:00:00  
 **Tipo:** GitHub Push  
 **Versão:** v1.2.0 (CursosConteudo), v1.2.0 (academyCursosConteudo routes)  
