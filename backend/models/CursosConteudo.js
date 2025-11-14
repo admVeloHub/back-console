@@ -1,4 +1,4 @@
-// VERSION: v1.1.0 | DATE: 2025-01-30 | AUTHOR: VeloHub Development Team
+// VERSION: v1.2.0 | DATE: 2025-01-30 | AUTHOR: VeloHub Development Team
 const mongoose = require('mongoose');
 
 // Configurar conexão específica para o database academy_registros
@@ -99,13 +99,7 @@ const sectionSchema = new mongoose.Schema({
   },
   lessons: {
     type: [lessonSchema],
-    required: [true, 'Seção deve ter pelo menos uma aula'],
-    validate: {
-      validator: function(v) {
-        return v && v.length > 0;
-      },
-      message: 'Seção deve ter pelo menos uma aula'
-    }
+    default: []  // Permite seção sem aulas
   }
 }, { _id: false });
 
@@ -127,13 +121,7 @@ const moduleSchema = new mongoose.Schema({
   },
   sections: {
     type: [sectionSchema],
-    required: [true, 'Módulo deve ter pelo menos uma seção'],
-    validate: {
-      validator: function(v) {
-        return v && v.length > 0;
-      },
-      message: 'Módulo deve ter pelo menos uma seção'
-    }
+    default: []  // Permite módulo sem seções
   }
 }, { _id: false });
 

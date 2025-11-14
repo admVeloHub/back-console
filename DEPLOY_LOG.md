@@ -2,6 +2,37 @@
 
 ## GitHub Push - 2025-01-30
 
+**Data/Hora:** 2025-01-30 20:00:00  
+**Tipo:** GitHub Push  
+**Versão:** v1.2.0 (CursosConteudo), v1.2.0 (academyCursosConteudo routes)  
+**Repositório:** admVeloHub/back-console  
+**Branch:** master  
+
+### Descrição:
+Modificação de validações para permitir módulos e temas sem aulas:
+- Removida validação obrigatória de `lessons` (aulas) nas seções
+- Removida validação obrigatória de `sections` (seções) nos módulos
+- Agora é possível criar módulos sem seções e temas sem aulas
+- Arrays vazios são permitidos com `default: []`
+
+### Arquivos Modificados:
+- `backend/models/CursosConteudo.js` (v1.1.0 → v1.2.0) - Removidas validações obrigatórias de lessons e sections
+- `backend/routes/academyCursosConteudo.js` (v1.1.0 → v1.2.0) - Versão atualizada para consistência
+
+### Funcionalidades:
+- ✅ Permite criar módulo sem seções
+- ✅ Permite criar tema/seção sem aulas
+- ✅ Permite atualizar curso removendo todas as aulas de uma seção
+- ✅ Permite atualizar curso removendo todas as seções de um módulo
+- ✅ Mantém validação de pelo menos 1 módulo por curso
+
+### Commit Hash: [PENDENTE]  
+### Status: ✅ Sucesso
+
+---
+
+## GitHub Push - 2025-01-30
+
 **Data/Hora:** 2025-01-30 18:45:00  
 **Tipo:** GitHub Push  
 **Versão:** v1.1.0 (CursosConteudo), v1.1.0 (academyCursosConteudo routes), v2.1.0 (schema)  
